@@ -1,26 +1,19 @@
 package Source;
 
-public class Screen {
-    private int width, height;
-    private char[][] screen;
+import javax.swing.JFrame;
 
-    public Screen(int x, int y) {
-        this.width = x;
-        this.height = y;
-        this.screen = new char[this.width][this.height];
-    }
+public class Screen extends JFrame{
 
-    public void StartScreen() {
-        for (int i = 0; i < this.height; i++)
-            for (int j = 0; j < this.width; j++)
-                this.screen[i][j] = '.';
-    }
+    private static final long serialVersionUID = 1L;
 
-    public void PrintScreen() {
-        for (int i = 0; i < this.height; i++) {
-            for (int j = 0; j < this.width; j++)
-                System.out.print(this.screen[i][j]);
-            System.out.println();
-        }
-    }
+	Screen() {
+		Screen screen = new Screen();
+		this.add(screen);
+		this.setTitle("Snake Game");
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setResizable(false);
+		this.pack();
+		this.setVisible(true);
+		this.setLocationRelativeTo(null);
+	}
 }
