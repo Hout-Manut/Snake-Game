@@ -1,1 +1,1 @@
-A snake game for my OOP assignment.
+A snake game for my OOP group assignment.
