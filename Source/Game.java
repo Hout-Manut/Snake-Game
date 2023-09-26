@@ -4,38 +4,34 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.Random;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-
 
 public class Game extends JPanel implements ActionListener {
+
 	private static final long serialVersionUID = 1L;
-	
-	static final int SCREEN_WIDTH = 600;
-	static final int SCREEN_HEIGHT = 600;
-	static final int UNIT_SIZE = 25;
+
+    static final int SCREEN_WIDTH = 600;
+    static final int SCREEN_HEIGHT = 600;
+    static final int UNIT_SIZE = 25;
     static final int DELAY = 75;
-	static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-	final int x[] = new int[GAME_UNITS];
-	final int y[] = new int[GAME_UNITS];
-	int bodyParts = 6;
-	int applesEaten;
-	int appleX;
-	int appleY;
-	char direction = 'R';
-	boolean running = false;
-	Timer timer;
-	Random random;
-	
-	public Game() {
-		random = new Random();
-		this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
-		this.setBackground(Color.black);
-		this.setFocusable(true);
-		this.addKeyListener(new MyKeyAdapter());
-		startGame();
+    static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
+    final int x[] = new int[GAME_UNITS];
+    final int y[] = new int[GAME_UNITS];
+    int bodyParts = 6;
+    int applesEaten;
+    int appleX;
+    int appleY;
+    char direction = 'R';
+    boolean running = false;
+    Timer timer;
+    Random random;
+
+    public Game() {
+        random = new Random();
+        this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
+        this.setBackground(Color.black);
+        this.setFocusable(true);
+        this.addKeyListener(new MyKeyAdapter());
+        startGame();
     }
 
     public void startGame() {
@@ -43,7 +39,7 @@ public class Game extends JPanel implements ActionListener {
         running = true;
         timer = new Timer(DELAY, this);
         timer.start();
-    
+
     }
 
     @Override
@@ -52,7 +48,7 @@ public class Game extends JPanel implements ActionListener {
         drawFrame(g);
     }
 
-    public void drawFrame(Graphics g){
+    public void drawFrame(Graphics g) {
         if (running) {
             g.setColor(Color.red);
             g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
@@ -68,23 +64,24 @@ public class Game extends JPanel implements ActionListener {
             g.setColor(Color.red);
             g.setFont(new Font("Ink Free", Font.BOLD, 40));
             FontMetrics metrics = getFontMetrics(g.getFont());
-            g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
-        }
-        else {
+            g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2,
+                    g.getFont().getSize());
+        } else {
             gameOver(g);
         }
     }
 
     public void newApple() {
-        appleX = random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-        appleY = random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+        appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+        appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
     }
 
     public void gameOver(Graphics g) {
         g.setColor(Color.red);
         g.setFont(new Font("Ink Free", Font.BOLD, 40));
         FontMetrics metrics = getFontMetrics(g.getFont());
-        g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
+        g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2,
+                g.getFont().getSize());
         g.setColor(Color.red);
         g.setFont(new Font("Ink Free", Font.BOLD, 75));
         metrics = getFontMetrics(g.getFont());
@@ -121,25 +118,25 @@ public class Game extends JPanel implements ActionListener {
     }
 
     public void checkCollisions() {
-        //checks if head collides with body
+        // checks if head collides with body
         for (int i = bodyParts; i > 0; i--) {
             if ((x[0] == x[i]) && (y[0] == y[i])) {
                 running = false;
             }
         }
-        //check if head touches left border
+        // check if head touches left border
         if (x[0] < 0) {
             running = false;
         }
-        //check if head touches right border
+        // check if head touches right border
         if (x[0] > SCREEN_WIDTH) {
             running = false;
         }
-        //check if head touches top border
+        // check if head touches top border
         if (y[0] < 0) {
             running = false;
         }
-        //check if head touches bottom border
+        // check if head touches bottom border
         if (y[0] > SCREEN_HEIGHT) {
             running = false;
         }
