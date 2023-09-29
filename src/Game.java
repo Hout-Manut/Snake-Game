@@ -35,16 +35,14 @@ public class Game extends JPanel implements ActionListener {
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
-        this.addKeyListener(new MyKeyAdapter() {
-
-        });
+        this.addKeyListener(new MyKeyAdapter());
         start();
     }
 
     public void start() {
         addApple();
         isRunning = true;
-        Timer timer = new Timer(SPEED, this);
+        timer = new Timer(SPEED, this);
         timer.start();
     }
 
@@ -54,33 +52,30 @@ public class Game extends JPanel implements ActionListener {
             g.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
             g.setColor(Color.white);
-			g.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
-			
-			for (int i = 1; i < length; i++) {
-				g.setColor(new Color(40, 200, 150));
-				g.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
-			}
+            g.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
+
+            for (int i = 1; i < length; i++) {
+                g.setColor(new Color(40, 200, 150));
+                g.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+            }
             g.setColor(Color.white);
-			g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-			FontMetrics metrics = getFontMetrics(g.getFont());
-			g.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2, g.getFont().getSize());
-		
-		} else {
-			gameOver(g);
-		}
-    }
+            g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+            FontMetrics metrics = getFontMetrics(g.getFont());
+            g.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
+                    g.getFont().getSize());
 
-	public void gameOver(Graphics graphics) {
-		graphics.setColor(Color.red);
-		graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
-		FontMetrics metrics = getFontMetrics(graphics.getFont());
-		graphics.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2);
-		
-		graphics.setColor(Color.white);
-		graphics.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-		metrics = getFontMetrics(graphics.getFont());
-		graphics.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2, graphics.getFont().getSize());
+        } else {
+            g.setColor(Color.red);
+            g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
+            FontMetrics metrics = getFontMetrics(g.getFont());
+            g.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2);
 
+            g.setColor(Color.white);
+            g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+            metrics = getFontMetrics(g.getFont());
+            g.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
+                    g.getFont().getSize());
+        }
     }
 
     @Override
@@ -100,10 +95,10 @@ public class Game extends JPanel implements ActionListener {
             y[i] = y[i - 1];
         }
 
-        if (direction == 'R')
-            x[0] = x[0] + PIXEL_SIZE;
-        else if (direction == 'L')
+        if (direction == 'L')
             x[0] = x[0] - PIXEL_SIZE;
+        else if (direction == 'R')
+            x[0] = x[0] + PIXEL_SIZE;
         else if (direction == 'U')
             y[0] = y[0] - PIXEL_SIZE;
         else
@@ -123,16 +118,18 @@ public class Game extends JPanel implements ActionListener {
             if (x[0] == x[i] && y[0] == y[i]) {
                 isRunning = false;
                 System.out.println("You hit yourself.");
+                break;
             }
 
             if (x[0] < 0 || x[0] > WIDTH || y[0] < 0 || y[0] > HEIGHT) {
                 isRunning = false;
                 System.out.println("You hit a wall.");
+                break;
             }
 
-            if (!isRunning) {
-                timer.stop();
-            }
+        }
+        if (!isRunning) {
+            timer.stop();
         }
     }
 
@@ -151,27 +148,27 @@ public class Game extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (direction != 'R') {
+                case KeyEvent.VK_A:
+                    if (direction != 'R')
                         direction = 'L';
-                    }
                     break;
 
                 case KeyEvent.VK_RIGHT:
-                    if (direction != 'L') {
+                case KeyEvent.VK_R:
+                    if (direction != 'L')
                         direction = 'R';
-                    }
                     break;
 
                 case KeyEvent.VK_UP:
-                    if (direction != 'D') {
+                case KeyEvent.VK_W:
+                    if (direction != 'D')
                         direction = 'U';
-                    }
                     break;
 
                 case KeyEvent.VK_DOWN:
-                    if (direction != 'U') {
+                case KeyEvent.VK_D:
+                    if (direction != 'U')
                         direction = 'D';
-                    }
                     break;
             }
         }
