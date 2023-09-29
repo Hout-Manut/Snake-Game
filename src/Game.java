@@ -5,11 +5,10 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.util.Random;
 
-public class Game extends JPanel implements ActionListener {
+public class Game extends JPanel implements ActionListener, MouseListener {
 
-    static final int WIDTH = 500;
-    static final int HEIGHT = 500;
-    static final int SPEED = 100;
+    static final int WIDTH = 1280;
+    static final int HEIGHT = 720;
     static final int PIXEL_SIZE = 20;
     static final int NUMBER_OF_PIXELS = (WIDTH * HEIGHT) / (PIXEL_SIZE * PIXEL_SIZE);
     static final int START_X = WIDTH / 2;
@@ -20,15 +19,23 @@ public class Game extends JPanel implements ActionListener {
     final int[] x = new int[NUMBER_OF_PIXELS];
     final int[] y = new int[NUMBER_OF_PIXELS];
 
+    int speed = 100;
+ 
     int length = 3;
     int appleEaten;
     int appleY;
     int appleX;
     char direction = 'R';
-    boolean isRunning = false;
+    int gameState = 0;
+    /*
+     * 0 = Menu
+     * 1 = Playing
+     * 2 = Gameover
+     */
 
     Random random;
     Timer timer;
+
 
     Game() {
         random = new Random();
@@ -41,13 +48,16 @@ public class Game extends JPanel implements ActionListener {
 
     public void start() {
         addApple();
-        isRunning = true;
-        timer = new Timer(SPEED, this);
+        gameState = 1;
+        timer = new Timer(speed, this);
         timer.start();
     }
 
     public void draw(Graphics g) {
-        if (isRunning) {
+        if (gameState == 0) {
+
+        }
+        else if (gameState == 1) {
             g.setColor(new Color(245, 75, 60));
             g.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
@@ -85,6 +95,14 @@ public class Game extends JPanel implements ActionListener {
     }
 
     public void addApple() {
+        // while (true) {
+        //     appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
+        //     appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
+
+        //     for (int i = length; i > 0; i--)
+        //         if (!(appleX == x[i] && appleY == y[i]))
+        //             break;
+        // }
         appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
         appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
     }
@@ -116,26 +134,26 @@ public class Game extends JPanel implements ActionListener {
     public void checkHit() {
         for (int i = length; i > 0; i--) {
             if (x[0] == x[i] && y[0] == y[i]) {
-                isRunning = false;
+                gameState = 2;
                 System.out.println("You hit yourself.");
                 break;
             }
 
             if (x[0] < 0 || x[0] > WIDTH || y[0] < 0 || y[0] > HEIGHT) {
-                isRunning = false;
+                gameState = 2;
                 System.out.println("You hit a wall.");
                 break;
             }
 
         }
-        if (!isRunning) {
+        if (!(gameState == 1)) {
             timer.stop();
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        if (isRunning) {
+        if (gameState == 1) {
             move();
             checkApple();
             checkHit();
@@ -154,7 +172,7 @@ public class Game extends JPanel implements ActionListener {
                     break;
 
                 case KeyEvent.VK_RIGHT:
-                case KeyEvent.VK_R:
+                case KeyEvent.VK_D:
                     if (direction != 'L')
                         direction = 'R';
                     break;
@@ -166,11 +184,41 @@ public class Game extends JPanel implements ActionListener {
                     break;
 
                 case KeyEvent.VK_DOWN:
-                case KeyEvent.VK_D:
+                case KeyEvent.VK_S:
                     if (direction != 'U')
                         direction = 'D';
                     break;
             }
         }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'mouseClicked'");
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'mousePressed'");
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'mouseReleased'");
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'mouseEntered'");
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'mouseExited'");
     }
 }
