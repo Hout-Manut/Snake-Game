@@ -38,8 +38,27 @@ public class Game extends JPanel implements ActionListener, MouseListener {
     Random random;
     Timer timer;
 
+    private JButton startButton = new JButton("Start Game");
+    private JButton exitButton = new JButton("Exit");
+
     Game() {
         random = new Random();
+        setLayout(new GridLayout(2, 1));
+        startButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                start();
+            }
+        });
+        exitButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                System.exit(0);
+            }
+        });
+        // startButton.setVisible(false);
+        startButton.setBounds(500, 200, 20, 10);
+        exitButton.setSize(20, 10);
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
@@ -47,9 +66,15 @@ public class Game extends JPanel implements ActionListener, MouseListener {
         Thread t1 = new Thread();
         t1.start();
         start();
+        this.addMouseListener(this);
+        timer = new Timer(100, this);
+        timer.start();
+        this.add(startButton);
+        this.add(exitButton);
     }
 
     public void start() {
+        timer.stop();
         addApple();
         gameState = 1;
         x[0] = START_X;
@@ -63,36 +88,42 @@ public class Game extends JPanel implements ActionListener, MouseListener {
     }
 
     public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
         if (gameState == 0) {
-
+            g2d.setColor(Color.white);
+            g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
+            FontMetrics metrics = getFontMetrics(g2d.getFont());
+            g2d.drawString("Snake", (WIDTH - metrics.stringWidth("Snake")) / 2, HEIGHT / 2);
         } else if (gameState == 1) {
-            g.setColor(new Color(245, 75, 60));
-            g.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
+            g2d.setColor(new Color(245, 75, 60));
+            g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-            g.setColor(Color.white);
-            g.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
+            g2d.setColor(Color.white);
+            g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
             for (int i = 1; i < length; i++) {
-                g.setColor(new Color(40, 200, 150));
-                g.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+                g2d.setColor(new Color(40, 200, 150));
+                g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
             }
-            g.setColor(Color.white);
-            g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-            FontMetrics metrics = getFontMetrics(g.getFont());
-            g.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
-                    g.getFont().getSize());
+            g2d.setColor(Color.white);
+            g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+            FontMetrics metrics = getFontMetrics(g2d.getFont());
+            g2d.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
+                    g2d.getFont().getSize());
 
         } else {
-            g.setColor(Color.red);
-            g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
-            FontMetrics metrics = getFontMetrics(g.getFont());
-            g.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2);
+            g2d.setColor(Color.red);
+            g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
+            FontMetrics metrics = getFontMetrics(g2d.getFont());
+            g2d.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2);
 
-            g.setColor(Color.white);
-            g.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-            metrics = getFontMetrics(g.getFont());
-            g.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
-                    g.getFont().getSize());
+            g2d.setColor(Color.white);
+            g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+            metrics = getFontMetrics(g2d.getFont());
+            g2d.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
+                    g2d.getFont().getSize());
         }
     }
 
@@ -106,7 +137,12 @@ public class Game extends JPanel implements ActionListener, MouseListener {
         // while (true) {
         // appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
         // appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
+        // appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
+        // appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
 
+        // for (int i = length; i > 0; i--)
+        // if (!(appleX == x[i] && appleY == y[i]))
+        // break;
         // for (int i = length; i > 0; i--)
         // if (!(appleX == x[i] && appleY == y[i]))
         // break;
