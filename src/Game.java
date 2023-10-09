@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.Random;
+// import java.util.LinkedList;
+// import java.util.Queue;
 
 public class Game extends JPanel implements ActionListener, MouseListener {
 
@@ -20,7 +22,7 @@ public class Game extends JPanel implements ActionListener, MouseListener {
     final int[] y = new int[NUMBER_OF_PIXELS];
 
     int speed = 100;
- 
+
     int length = 3;
     int appleEaten;
     int appleY;
@@ -36,19 +38,26 @@ public class Game extends JPanel implements ActionListener, MouseListener {
     Random random;
     Timer timer;
 
-
     Game() {
         random = new Random();
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
+        Thread t1 = new Thread();
+        t1.start();
         start();
     }
 
     public void start() {
         addApple();
         gameState = 1;
+        x[0] = START_X;
+        x[1] = START_X;
+        x[2] = START_X;
+        y[0] = START_Y;
+        y[1] = START_Y;
+        y[2] = START_Y;
         timer = new Timer(speed, this);
         timer.start();
     }
@@ -56,8 +65,7 @@ public class Game extends JPanel implements ActionListener, MouseListener {
     public void draw(Graphics g) {
         if (gameState == 0) {
 
-        }
-        else if (gameState == 1) {
+        } else if (gameState == 1) {
             g.setColor(new Color(245, 75, 60));
             g.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
@@ -96,12 +104,12 @@ public class Game extends JPanel implements ActionListener, MouseListener {
 
     public void addApple() {
         // while (true) {
-        //     appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
-        //     appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
+        // appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
+        // appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
 
-        //     for (int i = length; i > 0; i--)
-        //         if (!(appleX == x[i] && appleY == y[i]))
-        //             break;
+        // for (int i = length; i > 0; i--)
+        // if (!(appleX == x[i] && appleY == y[i]))
+        // break;
         // }
         appleX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
         appleY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
@@ -162,34 +170,44 @@ public class Game extends JPanel implements ActionListener, MouseListener {
     }
 
     public class MyKeyAdapter extends KeyAdapter {
+        // private Queue<KeyEvent> queue = new LinkedList<KeyEvent>();
+
         @Override
         public void keyPressed(KeyEvent e) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_LEFT:
-                case KeyEvent.VK_A:
-                    if (direction != 'R')
-                        direction = 'L';
-                    break;
+        //     queue.add(e);
+        //     System.out.println("Pressed: " + e.getKeyCode());
+        // }
 
-                case KeyEvent.VK_RIGHT:
-                case KeyEvent.VK_D:
-                    if (direction != 'L')
-                        direction = 'R';
-                    break;
-
-                case KeyEvent.VK_UP:
-                case KeyEvent.VK_W:
-                    if (direction != 'D')
-                        direction = 'U';
-                    break;
-
-                case KeyEvent.VK_DOWN:
-                case KeyEvent.VK_S:
-                    if (direction != 'U')
-                        direction = 'D';
-                    break;
+        // @Override
+        // public void run() {
+        //     System.out.println("Running");
+        //     while (!queue.isEmpty()) {
+        //         KeyEvent e = queue.remove();
+        //         System.out.println(e.getKeyCode());
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_LEFT:
+                    case KeyEvent.VK_A:
+                        if (direction != 'R')
+                            direction = 'L';
+                        break;
+                    case KeyEvent.VK_RIGHT:
+                    case KeyEvent.VK_D:
+                        if (direction != 'L')
+                            direction = 'R';
+                        break;
+                    case KeyEvent.VK_UP:
+                    case KeyEvent.VK_W:
+                        if (direction != 'D')
+                            direction = 'U';
+                        break;
+                    case KeyEvent.VK_DOWN:
+                    case KeyEvent.VK_S:
+                        if (direction != 'U')
+                            direction = 'D';
+                        break;
+                }
             }
-        }
+        
     }
 
     @Override

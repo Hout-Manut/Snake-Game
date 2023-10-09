@@ -15,6 +15,7 @@ public class Panel extends JFrame{
         this.setTitle("Snake");
         this.setResizable(false);
         this.setLocationRelativeTo(null);
+        this.setLocation(300, 200);
         this.pack();
         this.setVisible(true);
         Image iconImage = Toolkit.getDefaultToolkit().getImage("src/Assets/python.png");
