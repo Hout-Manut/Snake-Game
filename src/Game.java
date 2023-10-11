@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-
 import javax.swing.*;
 import java.util.Random;
 // import java.util.LinkedList;
@@ -24,18 +23,22 @@ public class Game extends JPanel implements ActionListener {
     final int[] x = new int[NUMBER_OF_PIXELS];
     final int[] y = new int[NUMBER_OF_PIXELS];
 
-    int speed = 100;
+    static final int fps = 16;
 
+    float speed = 70.0f;
     int length = 3;
     int appleEaten;
     int appleY;
     int appleX;
     char direction = 'R';
     int gameState = 0;
+    long frames = 0;
+    int alpha = 255;
     /*
      * 0 = Menu
      * 1 = Playing
      * 2 = Gameover
+     * 3 = Leaderboard
      */
 
     Random random;
@@ -54,23 +57,33 @@ public class Game extends JPanel implements ActionListener {
     static final int exitButtonY = ((HEIGHT - 50) / 2) + 150;
 
     public Rectangle startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
-    static String startColor = "#808080";
-    static String startStringColor = "#ffffff";
+    String startColor = "#808080";
+    String startStringColor = "#ffffff";
     public Rectangle leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
-    static String leaderColor = "#808080";
-    static String leaderStringColor = "#ffffff";
+    String leaderColor = "#808080";
+    String leaderStringColor = "#ffffff";
     public Rectangle exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
-    static String exitColor = "#808080";
-    static String exitStringColor = "#ffffff";
+    String exitStringColor = "#ffffff";
+    String exitColor = "#808080";
+
+    int fakeLength;
+    int fakeStartX;
+    int fakeStartY;
+    int[] fakeX = new int[NUMBER_OF_PIXELS];
+    int[] fakeY = new int[NUMBER_OF_PIXELS];
+    char fakeDirection = 'D';
+    float fakeSpeed = 30.0f;
 
     Game() {
         random = new Random();
+        MyMouseAdapter mouseAdapter = new MyMouseAdapter(startRec, leaderRec, exitRec);
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
-        this.addMouseListener(new MyMouseAdapter(startRec, leaderRec, exitRec));
-        timer = new Timer(speed, this);
+        this.addMouseListener(mouseAdapter);
+        this.addMouseMotionListener(mouseAdapter);
+        timer = new Timer(fps, this);
         timer.start();
         start();
     }
@@ -79,26 +92,41 @@ public class Game extends JPanel implements ActionListener {
         timer.stop();
         addApple();
         gameState = 0;
-        x[0] = START_X;
-        x[1] = START_X;
-        x[2] = START_X;
-        y[0] = START_Y;
-        y[1] = START_Y;
-        y[2] = START_Y;
-        timer = new Timer(speed, this);
+        for (int i = 0; i < length; i++) {
+            x[i] = START_X - (i * PIXEL_SIZE);
+            y[i] = START_Y;
+        }
+        fakeStartX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
+        fakeStartY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
+        fakeLength = random.nextInt(20) + 3;
+        for (int i = 0; i < fakeLength; i++) {
+            fakeX[i] = fakeStartX - (i * PIXEL_SIZE);
+            fakeY[i] = fakeStartY;
+        }
         timer.start();
     }
 
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Font customFont;
+        FontMetrics metrics;
 
         try {
             if (gameState == 0) {
-                Font customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 50.0f);
+
+                g2d.setColor(new Color(60, 60, 60, 30));
+                g2d.fillRect(fakeX[0], fakeY[0], PIXEL_SIZE, PIXEL_SIZE);
+                g2d.setColor(new Color(100, 100, 100, 30));
+                for (int i = 1; i < fakeLength; i++) {
+                    g2d.fillRect(fakeX[i], fakeY[i], PIXEL_SIZE, PIXEL_SIZE);
+                }
+
+                customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
                 g2d.setColor(Color.black);
                 g2d.setFont(customFont);
-                FontMetrics metrics = getFontMetrics(g2d.getFont());
+                metrics = getFontMetrics(g2d.getFont());
                 g2d.drawString("Snake", (WIDTH - metrics.stringWidth("Snake")) / 2, HEIGHT / 4);
 
                 customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
@@ -107,11 +135,11 @@ public class Game extends JPanel implements ActionListener {
                 int buttonStringHeight = (HEIGHT + 25) / 2;
 
                 g2d.setColor(Color.decode(startColor));
-                g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 5, 5);
+                g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 7, 7);
                 g2d.setColor(Color.decode(leaderColor));
-                g2d.fillRoundRect(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight, 5, 5);
+                g2d.fillRoundRect(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight, 7, 7);
                 g2d.setColor(Color.decode(exitColor));
-                g2d.fillRoundRect(exitButtonX, exitButtonY, buttonWidth, buttonHeight, 5, 5);
+                g2d.fillRoundRect(exitButtonX, exitButtonY, buttonWidth, buttonHeight, 7, 7);
 
                 g2d.setColor(Color.decode(startStringColor));
                 g2d.drawString("Start", (WIDTH - metrics.stringWidth("Start")) / 2, buttonStringHeight);
@@ -125,30 +153,36 @@ public class Game extends JPanel implements ActionListener {
                 g2d.setColor(new Color(245, 75, 60));
                 g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-                g2d.setColor(Color.white);
+                g2d.setColor(new Color(60, 60, 60));
                 g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
                 for (int i = 1; i < length; i++) {
                     g2d.setColor(new Color(40, 200, 150));
                     g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
                 }
-                g2d.setColor(Color.white);
-                g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
-                FontMetrics metrics = getFontMetrics(g2d.getFont());
-                g2d.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
-                        g2d.getFont().getSize());
+                if (x[0] < 200 && y[0] < 100 && alpha > 60) {
+                    alpha -= 20;
+                } else if (alpha < 255) {
+                    alpha += 20;
+                }
+                g2d.setColor(new Color(0, 0, 0, alpha));
+                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
+                g2d.setFont(customFont);
+                g2d.drawString("Score: " + appleEaten, 10, g2d.getFont().getSize());
 
             } else {
                 g2d.setColor(Color.red);
-                g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 50));
-                FontMetrics metrics = getFontMetrics(g2d.getFont());
+                customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
+                g2d.setFont(customFont);
+                metrics = getFontMetrics(g2d.getFont());
                 g2d.drawString("Game Over", (WIDTH - metrics.stringWidth("Game Over")) / 2, HEIGHT / 2);
 
-                g2d.setColor(Color.white);
-                g2d.setFont(new Font("Sans serif", Font.ROMAN_BASELINE, 25));
+                g2d.setColor(Color.black);
+                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 34.0f);
+                g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
                 g2d.drawString("Score: " + appleEaten, (WIDTH - metrics.stringWidth("Score: " + appleEaten)) / 2,
-                        g2d.getFont().getSize());
+                        (HEIGHT / 2) + 50);
             }
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
@@ -199,6 +233,42 @@ public class Game extends JPanel implements ActionListener {
         }
     }
 
+    public void fakeMove() {
+        for (int i = fakeLength; i > 0; i--) {
+            fakeX[i] = fakeX[i - 1];
+            fakeY[i] = fakeY[i - 1];
+        }
+        int randomDirection = random.nextInt(20);
+        switch (randomDirection) {
+            case 1:
+                if (!(fakeDirection == 'R'))
+                    fakeDirection = 'L';
+                break;
+            case 2:
+                if (!(fakeDirection == 'L'))
+                    fakeDirection = 'R';
+                break;
+            case 3:
+                if (!(fakeDirection == 'D'))
+                    fakeDirection = 'U';
+                break;
+            case 4:
+                if (!(fakeDirection == 'U'))
+                    fakeDirection = 'D';
+                break;
+            default:
+                break;
+        }
+        if (fakeDirection == 'L')
+            fakeX[0] = fakeX[0] - PIXEL_SIZE;
+        else if (fakeDirection == 'R')
+            fakeX[0] = fakeX[0] + PIXEL_SIZE;
+        else if (fakeDirection == 'U')
+            fakeY[0] = fakeY[0] - PIXEL_SIZE;
+        else
+            fakeY[0] = fakeY[0] + PIXEL_SIZE;
+    }
+
     public void checkHit() {
         for (int i = length; i > 0; i--) {
             if (x[0] == x[i] && y[0] == y[i]) {
@@ -206,25 +276,44 @@ public class Game extends JPanel implements ActionListener {
                 System.out.println("You hit yourself.");
                 break;
             }
-
-            if (x[0] < 0 || x[0] > WIDTH || y[0] < 0 || y[0] > HEIGHT) {
-                gameState = 2;
-                System.out.println("You hit a wall.");
-                break;
-            }
-
+        }
+        if (x[0] < 0 || x[0] > WIDTH || y[0] < 0 || y[0] > HEIGHT) {
+            gameState = 2;
+            System.out.println("You hit a wall.");
         }
         if (!(gameState == 1)) {
             timer.stop();
         }
     }
 
+    public void checkFakeHit() {
+        if (fakeX[0] < 0)
+            fakeX[0] = WIDTH;
+        else if (fakeX[0] > WIDTH)
+            fakeX[0] = 0;
+        else if (fakeY[0] < 0)
+            fakeY[0] = HEIGHT;
+        else if (fakeY[0] > HEIGHT)
+            fakeY[0] = 0;
+    }
+
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        if (gameState == 1) {
-            move();
-            checkApple();
-            checkHit();
+        frames++;
+        switch (gameState) {
+            case 0:
+                if (frames % (fakeSpeed / 10) == 0) {
+                    fakeMove();
+                    checkFakeHit();
+                }
+                break;
+            case 1:
+                if (frames % (speed / 10) == 0) {
+                    move();
+                    checkApple();
+                    checkHit();
+                }
+                break;
         }
         repaint();
     }
@@ -232,6 +321,12 @@ public class Game extends JPanel implements ActionListener {
     public Font loadCustomFont(String fontPath, float size) throws FontFormatException, IOException {
         File fontFile = new File(fontPath);
         return Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(size);
+    }
+
+    public Font loadCustomBoldFont(String fontPath, float size) throws FontFormatException, IOException {
+        File fontFile = new File(fontPath);
+        Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(size);
+        return baseFont.deriveFont(Font.BOLD);
     }
 
     public class MyKeyAdapter extends KeyAdapter {
@@ -289,10 +384,15 @@ public class Game extends JPanel implements ActionListener {
 
         @Override
         public void mouseClicked(MouseEvent e) {
+            Point location = e.getPoint();
             switch (gameState) {
                 case 0:
-                    if (startRec.contains(e.getPoint())) {
+                    if (startRec.contains(location)) {
                         gameState = 1;
+                    } else if (leaderRec.contains(location)) {
+                        gameState = 3;
+                    } else if (exitRec.contains(location)) {
+                        System.exit(0);
                     }
                     break;
                 default:
@@ -301,25 +401,39 @@ public class Game extends JPanel implements ActionListener {
         }
 
         @Override
-        public void mouseEntered(MouseEvent e) {
+        public void mouseMoved(MouseEvent e) {
+            Point location = e.getPoint();
             switch (gameState) {
                 case 0:
-                    if (startRec.contains(e.getPoint())) {
-                        startColor = "#eeeeee";
+                    if (startRec.contains(location)) {
+                        startColor = "#d9d9d9";
                         startStringColor = "#000000";
                         Component component = e.getComponent();
                         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else if (leaderRec.contains(location)) {
+                        leaderColor = "#d9d9d9";
+                        leaderStringColor = "#000000";
+                        Component component = e.getComponent();
+                        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else if (exitRec.contains(location)) {
+                        exitColor = "#d9d9d9";
+                        exitStringColor = "#000000";
+                        Component component = e.getComponent();
+                        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else {
+                        startColor = "#808080";
+                        leaderColor = "#808080";
+                        exitColor = "#808080";
+                        startStringColor = "#ffffff";
+                        leaderStringColor = "#ffffff";
+                        exitStringColor = "#ffffff";
+                        Component component = e.getComponent();
+                        component.setCursor(Cursor.getDefaultCursor());
                     }
                     break;
                 default:
                     break;
             }
         }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            e.getComponent().setCursor(Cursor.getDefaultCursor());
-        }
-
     }
 }
