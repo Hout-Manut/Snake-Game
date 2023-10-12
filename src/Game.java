@@ -25,7 +25,7 @@ public class Game extends JPanel implements ActionListener {
 
     static final int fps = 16;
 
-    float speed = 70.0f;
+    float speed = 50.0f;
     int length = 3;
     int appleEaten;
     int appleY;
@@ -98,7 +98,7 @@ public class Game extends JPanel implements ActionListener {
         }
         fakeStartX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
         fakeStartY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
-        fakeLength = random.nextInt(20) + 3;
+        fakeLength = random.nextInt(15) + 5;
         for (int i = 0; i < fakeLength; i++) {
             fakeX[i] = fakeStartX - (i * PIXEL_SIZE);
             fakeY[i] = fakeStartY;
