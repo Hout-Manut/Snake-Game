@@ -1,16 +1,25 @@
 package src;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-
+import java.awt.*;
 import javax.swing.*;
 
-public class Panel extends JFrame{
+public class Panel extends JFrame {
 
-    
-    Panel(){
-        Game game = new Game();
-        this.add(game);
+    private CardLayout cardLayout;
+    private JPanel cards;
+    private Game game;
+    private Menu menu;
+
+    Panel() {
+        cardLayout = new CardLayout();
+        cards = new JPanel(cardLayout);
+
+        menu = new Menu(this);
+        game = new Game();
+        cards.add(menu, "Menu");
+        cards.add(game, "Game");
+
+        this.add(cards);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Snake");
         this.setResizable(false);
@@ -20,5 +29,11 @@ public class Panel extends JFrame{
         this.setVisible(true);
         Image iconImage = Toolkit.getDefaultToolkit().getImage("src/Assets/python.png");
         this.setIconImage(iconImage);
-        }
+    }
+
+    public void changeToGame() {
+        cardLayout.show(cards, "Game");
+        game.requestFocusForComponent(game);
+        game.start();
+    }
 }
