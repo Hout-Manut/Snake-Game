@@ -16,12 +16,13 @@ public class Menu extends JPanel implements ActionListener {
     static final int NUMBER_OF_PIXELS = (WIDTH * HEIGHT) / (PIXEL_SIZE * PIXEL_SIZE);
 
     static final String backgroundColor = "#eaeaea";
-    static final int fps = 32;
+    static final int fps = 16;
 
     private Panel panel;
 
     int gameState;
     long frames = 0;
+    int offset = 1;
 
     Random random;
     Timer timer;
@@ -56,7 +57,7 @@ public class Menu extends JPanel implements ActionListener {
     int[] fakeX = new int[NUMBER_OF_PIXELS];
     int[] fakeY = new int[NUMBER_OF_PIXELS];
     char fakeDirection = 'D';
-    float fakeSpeed = 30.0f;
+    float fakeSpeed = 50.0f;
 
     Menu(Panel panel) {
         random = new Random();
@@ -87,38 +88,61 @@ public class Menu extends JPanel implements ActionListener {
         FontMetrics metrics;
 
         try {
-            g2d.setColor(new Color(60, 60, 60, 30));
-            g2d.fillRect(fakeX[0], fakeY[0], PIXEL_SIZE, PIXEL_SIZE);
-            g2d.setColor(new Color(100, 100, 100, 30));
-            for (int i = 1; i < fakeLength; i++) {
-                g2d.fillRect(fakeX[i], fakeY[i], PIXEL_SIZE, PIXEL_SIZE);
+
+            if (gameState == 0) {
+                g2d.setColor(new Color(60, 60, 60, 30));
+                g2d.fillRect(fakeX[0], fakeY[0], PIXEL_SIZE, PIXEL_SIZE);
+                g2d.setColor(new Color(100, 100, 100, 30));
+                for (int i = 1; i < fakeLength; i++) {
+                    g2d.fillRect(fakeX[i], fakeY[i], PIXEL_SIZE, PIXEL_SIZE);
+                }
+
+                customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
+                g2d.setColor(Color.black);
+                g2d.setFont(customFont);
+                metrics = getFontMetrics(g2d.getFont());
+                g2d.drawString("Snake", (WIDTH - metrics.stringWidth("Snake")) / 2, HEIGHT / 4);
+
+                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
+                g2d.setFont(customFont);
+                metrics = getFontMetrics(g2d.getFont());
+                int buttonStringHeight = (HEIGHT + 25) / 2;
+
+                g2d.setColor(Color.decode(startColor));
+                g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 7, 7);
+                g2d.setColor(Color.decode(leaderColor));
+                g2d.fillRoundRect(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight, 7, 7);
+                g2d.setColor(Color.decode(exitColor));
+                g2d.fillRoundRect(exitButtonX, exitButtonY, buttonWidth, buttonHeight, 7, 7);
+
+                g2d.setColor(Color.decode(startStringColor));
+                g2d.drawString("Start", (WIDTH - metrics.stringWidth("Start")) / 2, buttonStringHeight);
+                g2d.setColor(Color.decode(leaderStringColor));
+                g2d.drawString("Leaderboard", (WIDTH - metrics.stringWidth("Leaderboard")) / 2,
+                        buttonStringHeight + 75);
+                g2d.setColor(Color.decode(exitStringColor));
+                g2d.drawString("Exit", (WIDTH - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150);
+            } else {
+                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
+                g2d.setFont(customFont);
+                metrics = getFontMetrics(g2d.getFont());
+                int buttonStringHeight = (HEIGHT + 25) / 2;
+                g2d.setColor(Color.decode(startColor));
+                g2d.fillRoundRect(startButtonX, startButtonY + offset, buttonWidth, buttonHeight, 7, 7);
+                g2d.setColor(Color.decode(leaderColor));
+                g2d.fillRoundRect(leaderButtonX, leaderButtonY + offset, buttonWidth, buttonHeight, 7, 7);
+                g2d.setColor(Color.decode(exitColor));
+                g2d.fillRoundRect(exitButtonX, exitButtonY + offset, buttonWidth, buttonHeight, 7, 7);
+
+                g2d.setColor(Color.decode(startStringColor));
+                g2d.drawString("Start", (WIDTH - metrics.stringWidth("Start")) / 2, buttonStringHeight + offset);
+                g2d.setColor(Color.decode(leaderStringColor));
+                g2d.drawString("Leaderboard", (WIDTH - metrics.stringWidth("Leaderboard")) / 2,
+                        buttonStringHeight + 75 + offset);
+                g2d.setColor(Color.decode(exitStringColor));
+                g2d.drawString("Exit", (WIDTH - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150 + offset);
+
             }
-
-            customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
-            g2d.setColor(Color.black);
-            g2d.setFont(customFont);
-            metrics = getFontMetrics(g2d.getFont());
-            g2d.drawString("Snake", (WIDTH - metrics.stringWidth("Snake")) / 2, HEIGHT / 4);
-
-            customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
-            g2d.setFont(customFont);
-            metrics = getFontMetrics(g2d.getFont());
-            int buttonStringHeight = (HEIGHT + 25) / 2;
-
-            g2d.setColor(Color.decode(startColor));
-            g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 7, 7);
-            g2d.setColor(Color.decode(leaderColor));
-            g2d.fillRoundRect(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight, 7, 7);
-            g2d.setColor(Color.decode(exitColor));
-            g2d.fillRoundRect(exitButtonX, exitButtonY, buttonWidth, buttonHeight, 7, 7);
-
-            g2d.setColor(Color.decode(startStringColor));
-            g2d.drawString("Start", (WIDTH - metrics.stringWidth("Start")) / 2, buttonStringHeight);
-            g2d.setColor(Color.decode(leaderStringColor));
-            g2d.drawString("Leaderboard", (WIDTH - metrics.stringWidth("Leaderboard")) / 2,
-                    buttonStringHeight + 75);
-            g2d.setColor(Color.decode(exitStringColor));
-            g2d.drawString("Exit", (WIDTH - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150);
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
         }
@@ -184,11 +208,16 @@ public class Menu extends JPanel implements ActionListener {
             case -1:
                 System.exit(0);
             case 1:
-                timer.stop();
-                panel.changeToGame();
+                if (offset < 100) {
+                    offset *= 2;
+                } else {
+                    timer.stop();
+                    panel.changeToGame();
+                }
                 break;
             case 2:
                 break;
+
         }
 
         if (frames % (fakeSpeed / 10) == 0) {
@@ -290,7 +319,7 @@ public class Menu extends JPanel implements ActionListener {
                     if (startRec.contains(location)) {
                         gameState = 1;
                     } else if (leaderRec.contains(location)) {
-                        gameState = 3;
+                        gameState = 0; // change later
                     } else if (exitRec.contains(location)) {
                         gameState = -1;
                     }
