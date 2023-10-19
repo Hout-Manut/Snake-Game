@@ -10,76 +10,118 @@ import java.util.Random;
 
 public class Menu extends JPanel implements ActionListener {
 
-    static final int WIDTH = 1280;
-    static final int HEIGHT = 720;
-    static final int PIXEL_SIZE = 20;
-    static final int NUMBER_OF_PIXELS = (WIDTH * HEIGHT) / (PIXEL_SIZE * PIXEL_SIZE);
+    private static int width;
+    private static int height;
+    private static int PIXEL_SIZE = 20;
+    // private static int NUMBER_OF_PIXELS;
 
-    static final String backgroundColor = "#eaeaea";
-    static final int fps = 16;
+    String backgroundColor = "#eaeaea";
+    static final int fps = 60;
 
     private Panel panel;
 
-    int gameState;
-    long frames = 0;
-    int offset = 1;
+    private int delay = 1000 / fps;
+    private int state;
+    private long frames = 0;
+    private int offset;
+    private int alpha;
+    private int selected;
+    private Color rgb;
 
-    Random random;
-    Timer timer;
+    private Random random;
+    private Timer timer;
 
     // Menu items:
 
-    static int selected = 0;
+    final int buttonWidth = 200;
+    final int buttonHeight = 50;
 
-    static final int buttonWidth = 200;
-    static final int buttonHeight = 50;
+    int startButtonX = (width - 200) / 2;
+    int startButtonY = (height - 50) / 2;
+    int leaderButtonX = (width - 200) / 2;
+    int leaderButtonY = ((height - 50) / 2) + 75;
+    int exitButtonX = (width - 200) / 2;
+    int exitButtonY = ((height - 50) / 2) + 150;
 
-    static final int startButtonX = (WIDTH - 200) / 2;
-    static final int startButtonY = (HEIGHT - 50) / 2;
-    static final int leaderButtonX = (WIDTH - 200) / 2;
-    static final int leaderButtonY = ((HEIGHT - 50) / 2) + 75;
-    static final int exitButtonX = (WIDTH - 200) / 2;
-    static final int exitButtonY = ((HEIGHT - 50) / 2) + 150;
-
-    public Rectangle startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
     String startColor = "#808080";
     String startStringColor = "#ffffff";
-    public Rectangle leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
+
     String leaderColor = "#808080";
     String leaderStringColor = "#ffffff";
-    public Rectangle exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
+
     String exitStringColor = "#ffffff";
     String exitColor = "#808080";
+
+    public Rectangle startRec;
+    public Rectangle leaderRec;
+    public Rectangle exitRec;
 
     int fakeLength;
     int fakeStartX;
     int fakeStartY;
-    int[] fakeX = new int[NUMBER_OF_PIXELS];
-    int[] fakeY = new int[NUMBER_OF_PIXELS];
-    char fakeDirection = 'D';
-    float fakeSpeed = 50.0f;
+    int[] fakeX = new int[512];
+    int[] fakeY = new int[512];
+    char fakeDirection;
+    float fakeSpeed;
+    boolean windowChanged = false;
 
     Menu(Panel panel) {
         random = new Random();
-        MyMouseAdapter mouseAdapter = new MyMouseAdapter(startRec, leaderRec, exitRec);
-        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        MyMouseAdapter mouseAdapter = new MyMouseAdapter();
+        this.setPreferredSize(new Dimension(1280, 720));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
         this.addMouseListener(mouseAdapter);
         this.addMouseMotionListener(mouseAdapter);
+        this.addComponentListener(new MyComponentAdapter());
         this.panel = panel;
-        fakeStartX = random.nextInt((int) (WIDTH / PIXEL_SIZE)) * PIXEL_SIZE;
-        fakeStartY = random.nextInt((int) (HEIGHT / PIXEL_SIZE)) * PIXEL_SIZE;
+        startButtonX = (1280 - 200) / 2;
+        startButtonY = (720 - 50) / 2;
+        leaderButtonX = (1280 - 200) / 2;
+        leaderButtonY = ((720 - 50) / 2) + 75;
+        exitButtonX = (1280 - 200) / 2;
+        exitButtonY = ((720 - 50) / 2) + 150;
+
+        startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
+        leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
+        exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
+        timer = new Timer(delay, this);
+    }
+    
+    public void start(int width, int height) {
+        this.setPreferredSize(new Dimension(width, height));
+        state = 0;
+        selected = 0;
+        offset = 2;
+        alpha = 255;
+        fakeSpeed = 40.0f;
+        fakeDirection = 'R';
+        fakeStartX = random.nextInt((int) (width / PIXEL_SIZE)) * PIXEL_SIZE;
+        fakeStartY = random.nextInt((int) (height / PIXEL_SIZE)) * PIXEL_SIZE;
         fakeLength = random.nextInt(15) + 5;
         for (int i = 0; i < fakeLength; i++) {
             fakeX[i] = fakeStartX - (i * PIXEL_SIZE);
             fakeY[i] = fakeStartY;
         }
-        timer = new Timer(fps, this);
         timer.start();
     }
 
+    public void calculateComponent() {
+        // NUMBER_OF_PIXELS = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
+        startButtonX = (width - 200) / 2;
+        startButtonY = (height - 50) / 2;
+        leaderButtonX = (width - 200) / 2;
+        leaderButtonY = ((height - 50) / 2) + 75;
+        exitButtonX = (width - 200) / 2;
+        exitButtonY = ((height - 50) / 2) + 150;
+
+        startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
+        leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
+        exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
+        windowChanged = false;
+    }
+    
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -89,7 +131,7 @@ public class Menu extends JPanel implements ActionListener {
 
         try {
 
-            if (gameState == 0) {
+            if (state == 0) {
                 g2d.setColor(new Color(60, 60, 60, 30));
                 g2d.fillRect(fakeX[0], fakeY[0], PIXEL_SIZE, PIXEL_SIZE);
                 g2d.setColor(new Color(100, 100, 100, 30));
@@ -101,46 +143,53 @@ public class Menu extends JPanel implements ActionListener {
                 g2d.setColor(Color.black);
                 g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
-                g2d.drawString("Snake", (WIDTH - metrics.stringWidth("Snake")) / 2, HEIGHT / 4);
+                g2d.drawString("Snake", (width - metrics.stringWidth("Snake")) / 2, height / 4);
 
                 customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
                 g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
-                int buttonStringHeight = (HEIGHT + 25) / 2;
+                int buttonStringHeight = (height + 25) / 2;
 
                 g2d.setColor(Color.decode(startColor));
-                g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 7, 7);
+                g2d.fillRoundRect((width - 200) / 2, (height - 50) / 2, buttonWidth, buttonHeight, 7, 7);
                 g2d.setColor(Color.decode(leaderColor));
-                g2d.fillRoundRect(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight, 7, 7);
+                g2d.fillRoundRect((width - 200) / 2, ((height - 50) / 2) + 75, buttonWidth, buttonHeight, 7, 7);
                 g2d.setColor(Color.decode(exitColor));
-                g2d.fillRoundRect(exitButtonX, exitButtonY, buttonWidth, buttonHeight, 7, 7);
+                g2d.fillRoundRect((width - 200) / 2, ((height - 50) / 2) + 150, buttonWidth, buttonHeight, 7, 7);
 
                 g2d.setColor(Color.decode(startStringColor));
-                g2d.drawString("Start", (WIDTH - metrics.stringWidth("Start")) / 2, buttonStringHeight);
+                g2d.drawString("Start", (width - metrics.stringWidth("Start")) / 2, buttonStringHeight);
                 g2d.setColor(Color.decode(leaderStringColor));
-                g2d.drawString("Leaderboard", (WIDTH - metrics.stringWidth("Leaderboard")) / 2,
+                g2d.drawString("Leaderboard", (width - metrics.stringWidth("Leaderboard")) / 2,
                         buttonStringHeight + 75);
                 g2d.setColor(Color.decode(exitStringColor));
-                g2d.drawString("Exit", (WIDTH - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150);
+                g2d.drawString("Exit", (width - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150);
             } else {
                 customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
                 g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
-                int buttonStringHeight = (HEIGHT + 25) / 2;
-                g2d.setColor(Color.decode(startColor));
+                int buttonStringHeight = (height + 25) / 2;
+
+                rgb = Color.decode(startColor);
+                g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
                 g2d.fillRoundRect(startButtonX, startButtonY + offset, buttonWidth, buttonHeight, 7, 7);
-                g2d.setColor(Color.decode(leaderColor));
+                rgb = Color.decode(leaderColor);
+                g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
                 g2d.fillRoundRect(leaderButtonX, leaderButtonY + offset, buttonWidth, buttonHeight, 7, 7);
-                g2d.setColor(Color.decode(exitColor));
+                rgb = Color.decode(exitColor);
+                g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
                 g2d.fillRoundRect(exitButtonX, exitButtonY + offset, buttonWidth, buttonHeight, 7, 7);
 
-                g2d.setColor(Color.decode(startStringColor));
-                g2d.drawString("Start", (WIDTH - metrics.stringWidth("Start")) / 2, buttonStringHeight + offset);
-                g2d.setColor(Color.decode(leaderStringColor));
-                g2d.drawString("Leaderboard", (WIDTH - metrics.stringWidth("Leaderboard")) / 2,
+                rgb = Color.decode(startStringColor);
+                g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
+                g2d.drawString("Start", (width - metrics.stringWidth("Start")) / 2, buttonStringHeight + offset);
+                rgb = Color.decode(leaderStringColor);
+                g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
+                g2d.drawString("Leaderboard", (width - metrics.stringWidth("Leaderboard")) / 2,
                         buttonStringHeight + 75 + offset);
-                g2d.setColor(Color.decode(exitStringColor));
-                g2d.drawString("Exit", (WIDTH - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150 + offset);
+                rgb = Color.decode(exitStringColor);
+                g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
+                g2d.drawString("Exit", (width - metrics.stringWidth("Exit")) / 2, buttonStringHeight + 150 + offset);
 
             }
         } catch (IOException | FontFormatException e) {
@@ -159,7 +208,7 @@ public class Menu extends JPanel implements ActionListener {
             fakeX[i] = fakeX[i - 1];
             fakeY[i] = fakeY[i - 1];
         }
-        int randomDirection = random.nextInt(20);
+        int randomDirection = random.nextInt(25);
         switch (randomDirection) {
             case 1:
                 if (!(fakeDirection == 'R'))
@@ -192,27 +241,30 @@ public class Menu extends JPanel implements ActionListener {
 
     public void checkFakeHit() {
         if (fakeX[0] < 0)
-            fakeX[0] = WIDTH;
-        else if (fakeX[0] > WIDTH)
+            fakeX[0] = width;
+        else if (fakeX[0] > width)
             fakeX[0] = 0;
         else if (fakeY[0] < 0)
-            fakeY[0] = HEIGHT;
-        else if (fakeY[0] > HEIGHT)
+            fakeY[0] = height;
+        else if (fakeY[0] > height)
             fakeY[0] = 0;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         frames++;
-        switch (gameState) {
+        if (windowChanged)
+            calculateComponent();
+        switch (state) {
             case -1:
                 System.exit(0);
             case 1:
-                if (offset < 100) {
-                    offset *= 2;
+                if (offset <= 512 && alpha > 0) {
+                    offset += (offset / 2) + 1;
+                    alpha /= 2;
                 } else {
                     timer.stop();
-                    panel.changeToGame();
+                    panel.switchToGame(width, height);
                 }
                 break;
             case 2:
@@ -261,20 +313,9 @@ public class Menu extends JPanel implements ActionListener {
     }
 
     public class MyKeyAdapter extends KeyAdapter {
-        // private Queue<KeyEvent> queue = new LinkedList<KeyEvent>();
 
         @Override
         public void keyPressed(KeyEvent e) {
-            // queue.add(e);
-            // System.out.println("Pressed: " + e.getKeyCode());
-            // }
-
-            // @Override
-            // public void run() {
-            // System.out.println("Running");
-            // while (!queue.isEmpty()) {
-            // KeyEvent e = queue.remove();
-            // System.out.println(e.getKeyCode());
             if (selected == 0)
                 selected = 1;
             switch (e.getKeyCode()) {
@@ -289,10 +330,10 @@ public class Menu extends JPanel implements ActionListener {
                 case KeyEvent.VK_ENTER:
                     switch (selected) {
                         case 1:
-                            gameState = 1;
+                            state = 1;
                             break;
                         case 3:
-                            gameState = -1;
+                            state = -1;
                             break;
 
                     }
@@ -301,27 +342,18 @@ public class Menu extends JPanel implements ActionListener {
     }
 
     public class MyMouseAdapter extends MouseAdapter {
-        private Rectangle startRec;
-        private Rectangle leaderRec;
-        private Rectangle exitRec;
-
-        public MyMouseAdapter(Rectangle startRec, Rectangle leaderRec, Rectangle exitRec) {
-            this.startRec = startRec;
-            this.leaderRec = leaderRec;
-            this.exitRec = exitRec;
-        }
 
         @Override
         public void mouseClicked(MouseEvent e) {
             Point location = e.getPoint();
-            switch (gameState) {
+            switch (state) {
                 case 0:
                     if (startRec.contains(location)) {
-                        gameState = 1;
+                        state = 1;
                     } else if (leaderRec.contains(location)) {
-                        gameState = 0; // change later
+                        state = 0; // change later
                     } else if (exitRec.contains(location)) {
-                        gameState = -1;
+                        state = -1;
                     }
                     break;
                 default:
@@ -332,29 +364,42 @@ public class Menu extends JPanel implements ActionListener {
         @Override
         public void mouseMoved(MouseEvent e) {
             Point location = e.getPoint();
-            switch (gameState) {
+            Component component = e.getComponent();
+            switch (state) {
                 case 0:
                     if (startRec.contains(location)) {
                         selected = 1;
-                        Component component = e.getComponent();
                         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     } else if (leaderRec.contains(location)) {
                         selected = 2;
-                        Component component = e.getComponent();
                         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     } else if (exitRec.contains(location)) {
                         selected = 3;
-                        Component component = e.getComponent();
                         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     } else {
                         selected = 0;
-                        Component component = e.getComponent();
                         component.setCursor(Cursor.getDefaultCursor());
                     }
                     break;
                 default:
                     break;
             }
+        }
+    }
+
+    public class MyComponentAdapter extends ComponentAdapter {
+        @Override
+        public void componentResized(ComponentEvent e) {
+            Dimension dimension = e.getComponent().getSize();
+            width = dimension.width;
+            height = dimension.height;
+            windowChanged = true;
+        }
+    }
+
+    public void requestFocusForComponent(Component component) {
+        if (component != null) {
+            component.requestFocusInWindow();
         }
     }
 }
