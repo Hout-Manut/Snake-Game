@@ -10,8 +10,8 @@ import java.util.Random;
 
 public class Menu extends JPanel implements ActionListener {
 
-    private static int width;
-    private static int height;
+    private int width;
+    private int height;
     private static int PIXEL_SIZE = 20;
     // private static int NUMBER_OF_PIXELS;
 
@@ -52,9 +52,9 @@ public class Menu extends JPanel implements ActionListener {
     String exitStringColor = "#ffffff";
     String exitColor = "#808080";
 
-    public Rectangle startRec;
-    public Rectangle leaderRec;
-    public Rectangle exitRec;
+    private Rectangle startRec;
+    private Rectangle leaderRec;
+    private Rectangle exitRec;
 
     int fakeLength;
     int fakeStartX;
@@ -63,7 +63,7 @@ public class Menu extends JPanel implements ActionListener {
     int[] fakeY = new int[512];
     char fakeDirection;
     float fakeSpeed;
-    boolean windowChanged = false;
+    // boolean windowChanged = false;
 
     Menu(Panel panel) {
         random = new Random();
@@ -74,14 +74,16 @@ public class Menu extends JPanel implements ActionListener {
         this.addKeyListener(new MyKeyAdapter());
         this.addMouseListener(mouseAdapter);
         this.addMouseMotionListener(mouseAdapter);
-        this.addComponentListener(new MyComponentAdapter());
+        // this.addComponentListener(new MyComponentAdapter());
         this.panel = panel;
-        startButtonX = (1280 - 200) / 2;
-        startButtonY = (720 - 50) / 2;
-        leaderButtonX = (1280 - 200) / 2;
-        leaderButtonY = ((720 - 50) / 2) + 75;
-        exitButtonX = (1280 - 200) / 2;
-        exitButtonY = ((720 - 50) / 2) + 150;
+        this.width = panel.frameW;
+        this.height = panel.frameH;
+        startButtonX = (width - 200) / 2;
+        startButtonY = (height - 50) / 2;
+        leaderButtonX = (width - 200) / 2;
+        leaderButtonY = ((height - 50) / 2) + 75;
+        exitButtonX = (width - 200) / 2;
+        exitButtonY = ((height - 50) / 2) + 150;
 
         startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
         leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
@@ -89,8 +91,8 @@ public class Menu extends JPanel implements ActionListener {
         timer = new Timer(delay, this);
     }
     
-    public void start(int width, int height) {
-        this.setPreferredSize(new Dimension(width, height));
+    public void start() {
+        this.setCursor(Cursor.getDefaultCursor());
         state = 0;
         selected = 0;
         offset = 2;
@@ -107,20 +109,20 @@ public class Menu extends JPanel implements ActionListener {
         timer.start();
     }
 
-    public void calculateComponent() {
-        // NUMBER_OF_PIXELS = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
-        startButtonX = (width - 200) / 2;
-        startButtonY = (height - 50) / 2;
-        leaderButtonX = (width - 200) / 2;
-        leaderButtonY = ((height - 50) / 2) + 75;
-        exitButtonX = (width - 200) / 2;
-        exitButtonY = ((height - 50) / 2) + 150;
+    // public void calculateComponent() {
+    //     // NUMBER_OF_PIXELS = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
+    //     startButtonX = (width - 200) / 2;
+    //     startButtonY = (height - 50) / 2;
+    //     leaderButtonX = (width - 200) / 2;
+    //     leaderButtonY = ((height - 50) / 2) + 75;
+    //     exitButtonX = (width - 200) / 2;
+    //     exitButtonY = ((height - 50) / 2) + 150;
 
-        startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
-        leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
-        exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
-        windowChanged = false;
-    }
+    //     startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
+    //     leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
+    //     exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
+    //     windowChanged = false;
+    // }
     
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -253,8 +255,8 @@ public class Menu extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         frames++;
-        if (windowChanged)
-            calculateComponent();
+        // if (windowChanged)
+        //     calculateComponent();
         switch (state) {
             case -1:
                 System.exit(0);
@@ -387,15 +389,15 @@ public class Menu extends JPanel implements ActionListener {
         }
     }
 
-    public class MyComponentAdapter extends ComponentAdapter {
-        @Override
-        public void componentResized(ComponentEvent e) {
-            Dimension dimension = e.getComponent().getSize();
-            width = dimension.width;
-            height = dimension.height;
-            windowChanged = true;
-        }
-    }
+    // public class MyComponentAdapter extends ComponentAdapter {
+    //     @Override
+    //     public void componentResized(ComponentEvent e) {
+    //         Dimension dimension = e.getComponent().getSize();
+    //         width = dimension.width;
+    //         height = dimension.height;
+    //         windowChanged = true;
+    //     }
+    // }
 
     public void requestFocusForComponent(Component component) {
         if (component != null) {

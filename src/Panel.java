@@ -4,8 +4,8 @@ import java.awt.*;
 import javax.swing.*;
 
 public class Panel extends JFrame {
-    int frameW = 1280;
-    int frameH = 720;
+    public int frameW = 1280;
+    public int frameH = 720;
 
     private Menu menu;
     private Game game;
@@ -15,6 +15,7 @@ public class Panel extends JFrame {
         this.add(menu);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Snake");
+        this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setLocation(300, 200);
         this.pack();
@@ -22,17 +23,17 @@ public class Panel extends JFrame {
         Image iconImage = Toolkit.getDefaultToolkit().getImage("src/Assets/python.png");
         this.setIconImage(iconImage);
         this.setMinimumSize(new Dimension(600, 400));
-        menu.start(frameW, frameH);
+        menu.start();
     }
 
     public void switchToMenu() {
         this.add(menu);
         this.remove(game);
-        this.setResizable(true);
         this.pack();
         this.setVisible(true);
         menu.requestFocusForComponent(menu);
-        menu.start(frameW, frameH);
+        System.out.println(frameW + " " + frameH);
+        menu.start();
     }
     
     public void switchToGame(int width, int height) {
@@ -45,6 +46,5 @@ public class Panel extends JFrame {
         this.setVisible(true);
         game.requestFocusForComponent(game);
         game.start();
-        this.setResizable(false);
     }
 }

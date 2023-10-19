@@ -2,6 +2,7 @@ package src;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.*;
@@ -35,19 +36,28 @@ public class Game extends JPanel implements ActionListener {
     private char direction;
     private long frames = 0;
     private int hudAlpha;
+    private int gameoverAlpha;
     private int alpha;
     private int countdown;
     private int gameState;
+    private int transition;
+    private int mouse;
+
+    private int selected;
+    private int state;
     /*
      * 0 = Countdown
      * 1 = Playing
-     * 2 = Gameover
-     * 3 = Leaderboard
+     * 2 = Dying
+     * 3 = Gameover
      */
 
     private Random random;
     private Timer timer;
     private MyKeyAdapter keyAdapter;
+
+    private Rectangle menuRec;
+    private Rectangle restartRec;
 
     Game(Panel panel, int width, int height) {
         this.width = width;
@@ -60,10 +70,11 @@ public class Game extends JPanel implements ActionListener {
         this.addKeyListener(keyAdapter);
         this.panel = panel;
         timer = new Timer(delay, this);
+
     }
 
     public void start() {
-        System.out.println(width + height);
+        this.setCursor(Cursor.getDefaultCursor());
         this.setPreferredSize(new Dimension(width, height));
         NUMBER_OF_PIXELS = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
         x = new int[NUMBER_OF_PIXELS];
@@ -74,7 +85,9 @@ public class Game extends JPanel implements ActionListener {
         appleEaten = 0;
         gameState = 0;
         countdown = 3;
+        transition = 50;
         alpha = 0;
+        gameoverAlpha = 0;
         hudAlpha = 255;
         direction = 'R';
         length = 3;
@@ -96,56 +109,89 @@ public class Game extends JPanel implements ActionListener {
         FontMetrics metrics;
 
         try {
-            if (gameState == 1) {
-                g2d.setColor(new Color(245, 75, 60));
-                g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
+            switch (gameState) {
+                case 1:
+                    g2d.setColor(new Color(245, 75, 60));
+                    g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-                g2d.setColor(new Color(93, 158, 149));
-                g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
+                    g2d.setColor(new Color(93, 158, 149));
+                    g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
-                g2d.setColor(new Color(139, 173, 169));
-                for (int i = 1; i < length; i++) {
-                    g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
-                }
-                if (x[0] < 200 && y[0] < 100 && hudAlpha > 60) {
-                    hudAlpha -= 20;
-                } else if (!(x[0] < 200 && y[0] < 100) && hudAlpha < 255) {
-                    hudAlpha += 20;
-                }
-                g2d.setColor(new Color(0, 0, 0, hudAlpha));
-                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
-                g2d.setFont(customFont);
-                g2d.drawString("Score: " + appleEaten, 10, g2d.getFont().getSize());
+                    g2d.setColor(new Color(139, 173, 169));
+                    for (int i = 1; i < length; i++) {
+                        g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+                    }
+                    if (x[0] < 200 && y[0] < 100 && hudAlpha > 60) {
+                        hudAlpha -= 20;
+                    } else if (!(x[0] < 200 && y[0] < 100) && hudAlpha < 255) {
+                        hudAlpha += 20;
+                    }
+                    g2d.setColor(new Color(0, 0, 0, hudAlpha));
+                    customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
+                    g2d.setFont(customFont);
+                    g2d.drawString("Score: " + appleEaten, 10, g2d.getFont().getSize());
+                    break;
+                case 0:
+                    g2d.setColor(new Color(245, 75, 60, alpha));
+                    g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-            } else if (gameState == 0) {
-                g2d.setColor(new Color(245, 75, 60, alpha));
-                g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
+                    g2d.setColor(new Color(93, 158, 149, alpha));
+                    g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
-                g2d.setColor(new Color(93, 158, 149, alpha));
-                g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
+                    g2d.setColor(new Color(139, 173, 169, alpha));
+                    for (int i = 1; i < length; i++) {
+                        g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+                    }
+                    g2d.setColor(Color.red);
+                    customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 50.0f);
+                    g2d.setFont(customFont);
+                    metrics = getFontMetrics(g2d.getFont());
+                    g2d.drawString(countdown + "", (width - metrics.stringWidth(countdown + "")) / 2, height / 2);
+                    break;
+                case 2:
+                    g2d.setColor(new Color(245, 75, 60, alpha));
+                    g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-                g2d.setColor(new Color(139, 173, 169, alpha));
-                for (int i = 1; i < length; i++) {
-                    g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
-                }
-                g2d.setColor(Color.red);
-                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 50.0f);
-                g2d.setFont(customFont);
-                metrics = getFontMetrics(g2d.getFont());
-                g2d.drawString(countdown + "", (width - metrics.stringWidth(countdown + "")) / 2, height / 2);
-            } else {
-                g2d.setColor(Color.red);
-                customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
-                g2d.setFont(customFont);
-                metrics = getFontMetrics(g2d.getFont());
-                g2d.drawString("Game Over", (width - metrics.stringWidth("Game Over")) / 2, height / 2);
+                    g2d.setColor(new Color(93, 158, 149, alpha));
+                    g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
-                g2d.setColor(Color.black);
-                customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 34.0f);
-                g2d.setFont(customFont);
-                metrics = getFontMetrics(g2d.getFont());
-                g2d.drawString("Score: " + appleEaten, (width - metrics.stringWidth("Score: " + appleEaten)) / 2,
-                        (height / 2) + 50);
+                    g2d.setColor(new Color(139, 173, 169, alpha));
+                    for (int i = 1; i < length; i++) {
+                        g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+                    }
+                    g2d.setColor(new Color(0, 0, 0, hudAlpha));
+                    customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
+                    g2d.setFont(customFont);
+                    g2d.drawString("Score: " + appleEaten, 10, g2d.getFont().getSize());
+
+                    g2d.setColor(new Color(255, 20, 20, gameoverAlpha));
+                    customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
+                    g2d.setFont(customFont);
+                    metrics = getFontMetrics(g2d.getFont());
+                    g2d.drawString("Game Over", (width - metrics.stringWidth("Game Over")) / 2,
+                            (height / 2) + transition);
+
+                    g2d.setColor(new Color(10, 10, 10, gameoverAlpha));
+                    customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 34.0f);
+                    g2d.setFont(customFont);
+                    metrics = getFontMetrics(g2d.getFont());
+                    g2d.drawString("Score: " + appleEaten, (width - metrics.stringWidth("Score: " + appleEaten)) / 2,
+                            (height / 2) + 100);
+                    break;
+                case 3:
+                    g2d.setColor(Color.red);
+                    customFont = loadCustomBoldFont("src/Assets/GeosansLight.ttf", 50.0f);
+                    g2d.setFont(customFont);
+                    metrics = getFontMetrics(g2d.getFont());
+                    g2d.drawString("Game Over", (width - metrics.stringWidth("Game Over")) / 2, height / 2);
+
+                    g2d.setColor(Color.black);
+                    customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 34.0f);
+                    g2d.setFont(customFont);
+                    metrics = getFontMetrics(g2d.getFont());
+                    g2d.drawString("Score: " + appleEaten, (width - metrics.stringWidth("Score: " + appleEaten)) / 2,
+                            (height / 2) + 50);
+                    break;
             }
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
@@ -234,6 +280,9 @@ public class Game extends JPanel implements ActionListener {
                     alpha = 255;
                 break;
             case 1:
+                mouse++;
+                if (mouse > 128)
+                    showCursor(false);
                 if (frames % (speed / 10) == 0) {
                     move();
                     checkApple();
@@ -241,6 +290,20 @@ public class Game extends JPanel implements ActionListener {
                 }
                 break;
             case 2:
+                gameoverAlpha += 9;
+                if (gameoverAlpha > 255)
+                    gameoverAlpha = 255;
+                if (frames % 30 == 0) {
+                    alpha -= 10;
+                    if (alpha <= 150)
+                        alpha = 150;
+                    transition -= 5;
+                    if (transition <= 0 && frames % 30 == 0) {
+                        transition = 0;
+                        gameState = 3;
+                    }
+                }
+            case 3:
                 if (frames % 30 == 0) {
                     timer.stop();
                     panel.switchToMenu();
@@ -288,6 +351,60 @@ public class Game extends JPanel implements ActionListener {
                         direction = 'D';
                     break;
             }
+        }
+    }
+
+    public class MyMouseAdapter extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            mouse = 0;
+            Point location = e.getPoint();
+            switch (state) {
+                case 0:
+                    if (menuRec.contains(location)) {
+                        state = 1;
+                    } else if (restartRec.contains(location)) {
+                        state = 0; // change later
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            mouse = 0;
+            Point location = e.getPoint();
+            Component component = e.getComponent();
+            switch (state) {
+                case 0:
+                    if (menuRec.contains(location)) {
+                        selected = 1;
+                        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else if (restartRec.contains(location)) {
+                        selected = 2;
+                        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else {
+                        selected = 0;
+                        component.setCursor(Cursor.getDefaultCursor());
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void showCursor(boolean visible) {
+        if (!visible) {
+            Toolkit t = Toolkit.getDefaultToolkit();
+            Image i = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+            Cursor noCursor = t.createCustomCursor(i, new Point(0, 0), "none");
+            this.setCursor(noCursor);
+        } else {
+            this.setCursor(Cursor.getDefaultCursor());
         }
     }
 
