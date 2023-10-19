@@ -36,10 +36,8 @@ public class Panel extends JFrame {
         menu.start();
     }
     
-    public void switchToGame(int width, int height) {
-        frameW = width;
-        frameH = height;
-        game = new Game(this, width, height);
+    public void switchToGame() {
+        game = new Game(this);
         this.add(game);
         this.remove(menu);
         this.pack();

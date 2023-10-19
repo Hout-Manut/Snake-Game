@@ -43,14 +43,18 @@ public class Menu extends JPanel implements ActionListener {
     int exitButtonX = (width - 200) / 2;
     int exitButtonY = ((height - 50) / 2) + 150;
 
-    String startColor = "#808080";
-    String startStringColor = "#ffffff";
+    private static final String buttonIdle = "#888080";
+    private static final String buttonHover = "#dbd9d9";
+    
 
-    String leaderColor = "#808080";
-    String leaderStringColor = "#ffffff";
+    private String startColor = buttonIdle;
+    private String startStringColor = "#ffffff";
 
-    String exitStringColor = "#ffffff";
-    String exitColor = "#808080";
+    private String leaderColor = buttonIdle;
+    private String leaderStringColor = "#ffffff";
+
+    private String exitStringColor = buttonIdle;
+    private String exitColor = "#808080";
 
     private Rectangle startRec;
     private Rectangle leaderRec;
@@ -266,7 +270,7 @@ public class Menu extends JPanel implements ActionListener {
                     alpha /= 2;
                 } else {
                     timer.stop();
-                    panel.switchToGame(width, height);
+                    panel.switchToGame();
                 }
                 break;
             case 2:
@@ -278,9 +282,9 @@ public class Menu extends JPanel implements ActionListener {
             fakeMove();
             checkFakeHit();
         }
-        startColor = "#808080";
-        leaderColor = "#808080";
-        exitColor = "#808080";
+        startColor = buttonIdle;
+        leaderColor = buttonIdle;
+        exitColor = buttonIdle;
         startStringColor = "#ffffff";
         leaderStringColor = "#ffffff";
         exitStringColor = "#ffffff";
@@ -288,16 +292,16 @@ public class Menu extends JPanel implements ActionListener {
             case 0:
                 break;
             case 1:
-                startColor = "#d9d9d9";
-                startStringColor = "#000000";
+                startColor = buttonHover;
+                startStringColor = "#222222";
                 break;
             case 2:
-                leaderColor = "#d9d9d9";
-                leaderStringColor = "#000000";
+                leaderColor = buttonHover;
+                leaderStringColor = "#222222";
                 break;
             case 3:
-                exitColor = "#d9d9d9";
-                exitStringColor = "#000000";
+                exitColor = buttonHover;
+                exitStringColor = "#222222";
                 break;
         }
         repaint();

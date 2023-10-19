@@ -11,6 +11,7 @@ import java.util.Random;
 // import java.util.Queue;
 
 public class Game extends JPanel implements ActionListener {
+
     int width;
     int height;
 
@@ -41,10 +42,12 @@ public class Game extends JPanel implements ActionListener {
     private int countdown;
     private int gameState;
     private int transition;
+    private double transitionFrame;;
     private int mouse;
+    private int menuAlpha;
+    private int restartAlpha;
 
     private int selected;
-    private int state;
     /*
      * 0 = Countdown
      * 1 = Playing
@@ -59,9 +62,24 @@ public class Game extends JPanel implements ActionListener {
     private Rectangle menuRec;
     private Rectangle restartRec;
 
-    Game(Panel panel, int width, int height) {
-        this.width = width;
-        this.height = height;
+    final int buttonWidth = 250;
+    final int buttonHeight = 50;
+
+    private int menuButtonX;
+    private int menuButtonY;
+    private int restartButtonX;
+    private int restartButtonY;
+
+    private String menuColor;
+    private String menuStringColor;
+    private String restartColor;
+    private String restartStringColor;
+
+    private Color rgb;
+
+    Game(Panel panel) {
+        this.width = panel.frameW;
+        this.height = panel.frameH;
         random = new Random();
         keyAdapter = new MyKeyAdapter();
         this.setPreferredSize(new Dimension(width, height));
@@ -71,6 +89,18 @@ public class Game extends JPanel implements ActionListener {
         this.panel = panel;
         timer = new Timer(delay, this);
 
+        menuButtonX = (width - 200) * (1 / 4);
+        menuButtonY = (height - 50) / 2;
+        restartButtonX = (width - 200) * (3 / 4);
+        restartButtonY = (height - 50) / 2;
+
+        menuColor = "#1f1e33";
+        menuStringColor = "#1f1e33";
+        restartColor = "#1f1e33";
+        restartStringColor = "#1f1e33";
+
+        menuRec = new Rectangle(menuButtonX, menuButtonY, buttonWidth, buttonHeight);
+        restartRec = new Rectangle(restartButtonX, restartButtonY, buttonWidth, buttonHeight);
     }
 
     public void start() {
@@ -85,13 +115,15 @@ public class Game extends JPanel implements ActionListener {
         appleEaten = 0;
         gameState = 0;
         countdown = 3;
-        transition = 50;
+        transitionFrame = 0;
         alpha = 0;
         gameoverAlpha = 0;
         hudAlpha = 255;
         direction = 'R';
         length = 3;
         speed = 40.0f;
+        menuAlpha = 0;
+        restartAlpha = 0;
         for (int i = 0; i < length; i++) {
             x[i] = start_x - (i * PIXEL_SIZE);
             y[i] = start_y;
@@ -159,7 +191,7 @@ public class Game extends JPanel implements ActionListener {
                     for (int i = 1; i < length; i++) {
                         g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
                     }
-                    g2d.setColor(new Color(0, 0, 0, hudAlpha));
+                    g2d.setColor(new Color(0, 0, 0, alpha));
                     customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
                     g2d.setFont(customFont);
                     g2d.drawString("Score: " + appleEaten, 10, g2d.getFont().getSize());
@@ -177,6 +209,16 @@ public class Game extends JPanel implements ActionListener {
                     metrics = getFontMetrics(g2d.getFont());
                     g2d.drawString("Score: " + appleEaten, (width - metrics.stringWidth("Score: " + appleEaten)) / 2,
                             (height / 2) + 100);
+
+                    rgb = Color.decode(menuColor);
+                    g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), menuAlpha));
+                    g2d.fillRoundRect((int) ((width - 250) * 0.30), (height - 50) / 2 + 100, buttonWidth, buttonHeight,
+                            7, 7);
+                    rgb = Color.decode(restartColor);
+                    g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), restartAlpha));
+                    g2d.fillRoundRect((int) ((width - 250) * 0.70), ((height - 50) / 2) + 100, buttonWidth,
+                            buttonHeight,
+                            7, 7);
                     break;
                 case 3:
                     g2d.setColor(Color.red);
@@ -191,6 +233,13 @@ public class Game extends JPanel implements ActionListener {
                     metrics = getFontMetrics(g2d.getFont());
                     g2d.drawString("Score: " + appleEaten, (width - metrics.stringWidth("Score: " + appleEaten)) / 2,
                             (height / 2) + 50);
+
+                    g2d.setColor(Color.decode(menuColor));
+                    g2d.fillRoundRect((int) ((width - 250) * 0.40), (height - 50) / 2 + 75, buttonWidth, buttonHeight,
+                            7, 7);
+                    g2d.setColor(Color.decode(restartColor));
+                    g2d.fillRoundRect((int) ((width - 250) * 0.60), ((height - 50) / 2) + 75, buttonWidth, buttonHeight,
+                            7, 7);
                     break;
             }
         } catch (IOException | FontFormatException e) {
@@ -290,19 +339,21 @@ public class Game extends JPanel implements ActionListener {
                 }
                 break;
             case 2:
-                gameoverAlpha += 9;
+                transitionFrame++;
+                if (transitionFrame < 25)
+                    transition = easeOutCubic(transitionFrame / 25, 100);
+                if (transitionFrame > 30 && transitionFrame < 60)
+                    menuAlpha += 7;
+                if (menuAlpha > 255)
+                    menuAlpha = 255;
+                restartAlpha = menuAlpha;
+                gameoverAlpha += 7;
+                alpha -= 7;
                 if (gameoverAlpha > 255)
                     gameoverAlpha = 255;
-                if (frames % 30 == 0) {
-                    alpha -= 10;
-                    if (alpha <= 150)
-                        alpha = 150;
-                    transition -= 5;
-                    if (transition <= 0 && frames % 30 == 0) {
-                        transition = 0;
-                        gameState = 3;
-                    }
-                }
+                if (alpha <= 120)
+                    alpha = 120;
+                break;
             case 3:
                 if (frames % 30 == 0) {
                     timer.stop();
@@ -360,12 +411,12 @@ public class Game extends JPanel implements ActionListener {
         public void mouseClicked(MouseEvent e) {
             mouse = 0;
             Point location = e.getPoint();
-            switch (state) {
-                case 0:
+            switch (gameState) {
+                case 3:
                     if (menuRec.contains(location)) {
-                        state = 1;
+                        gameState = 1;
                     } else if (restartRec.contains(location)) {
-                        state = 0; // change later
+                        gameState = 0; // change later
                     }
                     break;
                 default:
@@ -378,8 +429,8 @@ public class Game extends JPanel implements ActionListener {
             mouse = 0;
             Point location = e.getPoint();
             Component component = e.getComponent();
-            switch (state) {
-                case 0:
+            switch (gameState) {
+                case 3:
                     if (menuRec.contains(location)) {
                         selected = 1;
                         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -406,6 +457,10 @@ public class Game extends JPanel implements ActionListener {
         } else {
             this.setCursor(Cursor.getDefaultCursor());
         }
+    }
+
+    public int easeOutCubic(double x, int end) {
+        return (int) (end * Math.pow(1 - x, 4));
     }
 
     public void requestFocusForComponent(Component component) {
