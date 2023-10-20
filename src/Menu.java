@@ -53,8 +53,8 @@ public class Menu extends JPanel implements ActionListener {
     private String leaderColor = buttonIdle;
     private String leaderStringColor = "#ffffff";
 
-    private String exitStringColor = buttonIdle;
-    private String exitColor = "#808080";
+    private String exitColor = buttonIdle;
+    private String exitStringColor = "#ffffff";
 
     private Rectangle startRec;
     private Rectangle leaderRec;
@@ -275,7 +275,6 @@ public class Menu extends JPanel implements ActionListener {
                 break;
             case 2:
                 break;
-
         }
 
         if (frames % (fakeSpeed / 10) == 0) {

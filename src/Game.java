@@ -86,6 +86,7 @@ public class Game extends JPanel implements ActionListener {
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
         this.addKeyListener(keyAdapter);
+        this.addMouseListener();
         this.panel = panel;
         timer = new Timer(delay, this);
 
@@ -330,8 +331,9 @@ public class Game extends JPanel implements ActionListener {
                 break;
             case 1:
                 mouse++;
-                if (mouse > 128)
+                if (mouse > 90)
                     showCursor(false);
+                else showCursor(true);
                 if (frames % (speed / 10) == 0) {
                     move();
                     checkApple();
@@ -339,6 +341,7 @@ public class Game extends JPanel implements ActionListener {
                 }
                 break;
             case 2:
+                showCursor(true);
                 transitionFrame++;
                 if (transitionFrame < 25)
                     transition = easeOutCubic(transitionFrame / 25, 100);
@@ -426,7 +429,6 @@ public class Game extends JPanel implements ActionListener {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            mouse = 0;
             Point location = e.getPoint();
             Component component = e.getComponent();
             switch (gameState) {
