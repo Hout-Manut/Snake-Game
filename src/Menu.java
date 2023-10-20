@@ -13,7 +13,7 @@ public class Menu extends JPanel implements ActionListener {
     private int width;
     private int height;
     private static int PIXEL_SIZE = 20;
-    // private static int NUMBER_OF_PIXELS;
+    private static int numberOfPixel;
 
     String backgroundColor = "#eaeaea";
     static final int fps = 60;
@@ -45,6 +45,7 @@ public class Menu extends JPanel implements ActionListener {
 
     private static final String buttonIdle = "#888080";
     private static final String buttonHover = "#dbd9d9";
+    int buttonStringHeight;
     
 
     private String startColor = buttonIdle;
@@ -63,31 +64,37 @@ public class Menu extends JPanel implements ActionListener {
     int fakeLength;
     int fakeStartX;
     int fakeStartY;
-    int[] fakeX = new int[512];
-    int[] fakeY = new int[512];
+    int[] fakeX;
+    int[] fakeY;
     char fakeDirection;
     float fakeSpeed;
     // boolean windowChanged = false;
 
     Menu(Panel panel) {
         random = new Random();
+        this.panel = panel;
+        this.width = panel.frameW;
+        this.height = panel.frameH;
         MyMouseAdapter mouseAdapter = new MyMouseAdapter();
-        this.setPreferredSize(new Dimension(1280, 720));
+        this.setPreferredSize(new Dimension(width, height));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
         this.addMouseListener(mouseAdapter);
         this.addMouseMotionListener(mouseAdapter);
         // this.addComponentListener(new MyComponentAdapter());
-        this.panel = panel;
-        this.width = panel.frameW;
-        this.height = panel.frameH;
+        numberOfPixel =  (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
+
+        fakeX = new int[numberOfPixel];
+        fakeY = new int[numberOfPixel];
+
         startButtonX = (width - 200) / 2;
         startButtonY = (height - 50) / 2;
         leaderButtonX = (width - 200) / 2;
         leaderButtonY = ((height - 50) / 2) + 75;
         exitButtonX = (width - 200) / 2;
         exitButtonY = ((height - 50) / 2) + 150;
+        buttonStringHeight = (height + 25) / 2;
 
         startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
         leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
@@ -154,14 +161,14 @@ public class Menu extends JPanel implements ActionListener {
                 customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
                 g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
-                int buttonStringHeight = (height + 25) / 2;
+
 
                 g2d.setColor(Color.decode(startColor));
-                g2d.fillRoundRect((width - 200) / 2, (height - 50) / 2, buttonWidth, buttonHeight, 7, 7);
+                g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 7, 7);
                 g2d.setColor(Color.decode(leaderColor));
-                g2d.fillRoundRect((width - 200) / 2, ((height - 50) / 2) + 75, buttonWidth, buttonHeight, 7, 7);
+                g2d.fillRoundRect(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight, 7, 7);
                 g2d.setColor(Color.decode(exitColor));
-                g2d.fillRoundRect((width - 200) / 2, ((height - 50) / 2) + 150, buttonWidth, buttonHeight, 7, 7);
+                g2d.fillRoundRect(exitButtonX, exitButtonY, buttonWidth, buttonHeight, 7, 7);
 
                 g2d.setColor(Color.decode(startStringColor));
                 g2d.drawString("Start", (width - metrics.stringWidth("Start")) / 2, buttonStringHeight);
@@ -174,7 +181,6 @@ public class Menu extends JPanel implements ActionListener {
                 customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
                 g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
-                int buttonStringHeight = (height + 25) / 2;
 
                 rgb = Color.decode(startColor);
                 g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));

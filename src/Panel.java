@@ -4,8 +4,8 @@ import java.awt.*;
 import javax.swing.*;
 
 public class Panel extends JFrame {
-    public int frameW = 1280;
-    public int frameH = 720;
+    public int frameW = 1300;
+    public int frameH = 750;
 
     private Menu menu;
     private Game game;

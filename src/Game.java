@@ -6,8 +6,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.*;
+
+import java.util.LinkedList;
 import java.util.Random;
-// import java.util.LinkedList;
 // import java.util.Queue;
 
 public class Game extends JPanel implements ActionListener {
@@ -15,7 +16,7 @@ public class Game extends JPanel implements ActionListener {
     int width;
     int height;
 
-    final int PIXEL_SIZE = 20;
+    final int PIXEL_SIZE = 25;
     int NUMBER_OF_PIXELS;
     int start_x;
     int start_y;
@@ -24,6 +25,7 @@ public class Game extends JPanel implements ActionListener {
 
     int[] y;
     int[] x;
+
     private Panel panel;
 
     static final int fps = 60;
@@ -35,6 +37,8 @@ public class Game extends JPanel implements ActionListener {
     private int appleY;
     private int appleX;
     private char direction;
+    private char lastDirection;
+    private char bufferDirection;
     private long frames = 0;
     private int hudAlpha;
     private int gameoverAlpha;
@@ -46,6 +50,16 @@ public class Game extends JPanel implements ActionListener {
     private int mouse;
     private int menuAlpha;
     private int restartAlpha;
+    private LinkedList<Character> orientation;
+    private char oriBuffer;
+    /*
+     * V = vertical
+     * H = horizontal
+     * U = up and right
+     * R = right and down
+     * D = down and left
+     * L = left and up
+     */
 
     private int selected;
     /*
@@ -58,22 +72,24 @@ public class Game extends JPanel implements ActionListener {
     private Random random;
     private Timer timer;
     private MyKeyAdapter keyAdapter;
+    private MyMouseAdapter mouseAdapter;
 
     private Rectangle menuRec;
     private Rectangle restartRec;
 
-    final int buttonWidth = 250;
+    final int buttonWidth = 200;
     final int buttonHeight = 50;
+    final int buttonStringHeight;
 
     private int menuButtonX;
     private int menuButtonY;
     private int restartButtonX;
     private int restartButtonY;
 
-    private String menuColor;
-    private String menuStringColor;
     private String restartColor;
     private String restartStringColor;
+    private String menuColor;
+    private String menuStringColor;
 
     private Color rgb;
 
@@ -82,18 +98,21 @@ public class Game extends JPanel implements ActionListener {
         this.height = panel.frameH;
         random = new Random();
         keyAdapter = new MyKeyAdapter();
+        mouseAdapter = new MyMouseAdapter();
         this.setPreferredSize(new Dimension(width, height));
         this.setBackground(Color.decode(backgroundColor));
         this.setFocusable(true);
         this.addKeyListener(keyAdapter);
-        this.addMouseListener();
+        this.addMouseListener(mouseAdapter);
+        this.addMouseMotionListener(mouseAdapter);
         this.panel = panel;
         timer = new Timer(delay, this);
 
-        menuButtonX = (width - 200) * (1 / 4);
-        menuButtonY = (height - 50) / 2;
-        restartButtonX = (width - 200) * (3 / 4);
-        restartButtonY = (height - 50) / 2;
+        restartButtonX = (int) ((width - buttonWidth) * 0.80);
+        restartButtonY = ((height - buttonHeight) / 2) - 60;
+        menuButtonX = (int) ((width - buttonWidth) * 0.80);
+        menuButtonY = ((height - buttonHeight) / 2) + 60;
+        buttonStringHeight = (height + 25) / 2;
 
         menuColor = "#1f1e33";
         menuStringColor = "#1f1e33";
@@ -110,6 +129,7 @@ public class Game extends JPanel implements ActionListener {
         NUMBER_OF_PIXELS = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
         x = new int[NUMBER_OF_PIXELS];
         y = new int[NUMBER_OF_PIXELS];
+        orientation = new LinkedList<Character>();
         start_x = width / 2;
         start_y = height / 2;
 
@@ -121,13 +141,16 @@ public class Game extends JPanel implements ActionListener {
         gameoverAlpha = 0;
         hudAlpha = 255;
         direction = 'R';
-        length = 3;
+        bufferDirection = 'R';
+        oriBuffer = 'H';
+        length = 5;
         speed = 40.0f;
         menuAlpha = 0;
         restartAlpha = 0;
         for (int i = 0; i < length; i++) {
             x[i] = start_x - (i * PIXEL_SIZE);
             y[i] = start_y;
+            orientation.add(oriBuffer);
         }
 
         addApple();
@@ -144,6 +167,7 @@ public class Game extends JPanel implements ActionListener {
         try {
             switch (gameState) {
                 case 1:
+                int size;
                     g2d.setColor(new Color(245, 75, 60));
                     g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
@@ -152,8 +176,34 @@ public class Game extends JPanel implements ActionListener {
 
                     g2d.setColor(new Color(139, 173, 169));
                     for (int i = 1; i < length; i++) {
-                        g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+                        size = (int)(5 * i/length);
+                        switch (orientation.get(i - 1)) {
+                            case 'H':
+                                g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
+                                break;
+                            case 'V':
+                                g2d.fillRect(x[i] + size, y[i], PIXEL_SIZE - (size * 2), PIXEL_SIZE);
+                                break;
+                            case 'U':
+                                g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE - (size * 2), PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i], PIXEL_SIZE - (size * 2), PIXEL_SIZE - size);
+                                break;
+                            case 'R':
+                                g2d.fillRect(x[i] + size, y[i], PIXEL_SIZE - (size * 2), PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
+                                break;
+                            case 'D':
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE - size, PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE - (size * 2), PIXEL_SIZE - size);
+                                break;
+                            case 'L':
+                                g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE - size, PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE - (size * 2), PIXEL_SIZE - size);
+                                break;
+                        }
                     }
+
+
                     if (x[0] < 200 && y[0] < 100 && hudAlpha > 60) {
                         hudAlpha -= 20;
                     } else if (!(x[0] < 200 && y[0] < 100) && hudAlpha < 255) {
@@ -202,24 +252,32 @@ public class Game extends JPanel implements ActionListener {
                     g2d.setFont(customFont);
                     metrics = getFontMetrics(g2d.getFont());
                     g2d.drawString("Game Over", (width - metrics.stringWidth("Game Over")) / 2,
-                            (height / 2) + transition);
+                            (height / 2) + transition - 30);
 
                     g2d.setColor(new Color(10, 10, 10, gameoverAlpha));
                     customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 34.0f);
                     g2d.setFont(customFont);
                     metrics = getFontMetrics(g2d.getFont());
                     g2d.drawString("Score: " + appleEaten, (width - metrics.stringWidth("Score: " + appleEaten)) / 2,
-                            (height / 2) + 100);
+                            (height / 2) + 50);
 
-                    rgb = Color.decode(menuColor);
-                    g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), menuAlpha));
-                    g2d.fillRoundRect((int) ((width - 250) * 0.30), (height - 50) / 2 + 100, buttonWidth, buttonHeight,
-                            7, 7);
                     rgb = Color.decode(restartColor);
                     g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), restartAlpha));
-                    g2d.fillRoundRect((int) ((width - 250) * 0.70), ((height - 50) / 2) + 100, buttonWidth,
-                            buttonHeight,
+                    g2d.fillRoundRect(restartButtonX, restartButtonY, buttonWidth, buttonHeight,
                             7, 7);
+                    rgb = Color.decode(menuColor);
+                    g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), menuAlpha));
+                    g2d.fillRoundRect(menuButtonX, menuButtonY, buttonWidth, buttonHeight,
+                            7, 7);
+
+                    rgb = Color.decode(menuStringColor);
+                    g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
+                    g2d.drawString("Restart", (int) ((width - metrics.stringWidth("Restart")) * 0.8),
+                            buttonStringHeight - 60);
+                    rgb = Color.decode(restartStringColor);
+                    g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
+                    g2d.drawString("Menu", (int) ((width - metrics.stringWidth("Menu")) * 0.8),
+                            buttonStringHeight + 60);
                     break;
                 case 3:
                     g2d.setColor(Color.red);
@@ -236,10 +294,10 @@ public class Game extends JPanel implements ActionListener {
                             (height / 2) + 50);
 
                     g2d.setColor(Color.decode(menuColor));
-                    g2d.fillRoundRect((int) ((width - 250) * 0.40), (height - 50) / 2 + 75, buttonWidth, buttonHeight,
+                    g2d.fillRoundRect(restartButtonX, restartButtonY, buttonWidth, buttonHeight,
                             7, 7);
                     g2d.setColor(Color.decode(restartColor));
-                    g2d.fillRoundRect((int) ((width - 250) * 0.60), ((height - 50) / 2) + 75, buttonWidth, buttonHeight,
+                    g2d.fillRoundRect(menuButtonX, menuButtonY, buttonWidth, buttonHeight,
                             7, 7);
                     break;
             }
@@ -255,17 +313,19 @@ public class Game extends JPanel implements ActionListener {
     }
 
     public void addApple() {
-        while (true) {
+        boolean overlap;
+        do {
             appleX = random.nextInt((int) (width / PIXEL_SIZE)) * PIXEL_SIZE;
             appleY = random.nextInt((int) (height / PIXEL_SIZE)) * PIXEL_SIZE;
-
+            overlap = false;
             for (int i = length; i > 0; i--)
-                if (!(appleX == x[i] && appleY == y[i]))
-                    continue;
-            break;
-        }
-        // appleX = random.nextInt((int) (width / PIXEL_SIZE)) * PIXEL_SIZE;
-        // appleY = random.nextInt((int) (height / PIXEL_SIZE)) * PIXEL_SIZE;
+                if (appleX == x[i] && appleY == y[i]){
+                    overlap = true;
+                    break;
+                }
+        } while (overlap);
+//        System.out.println("Apple added at (" + appleX + ", " + appleY + ")");
+    
     }
 
     public void move() {
@@ -277,17 +337,63 @@ public class Game extends JPanel implements ActionListener {
         switch (direction) {
             case 'L':
                 x[0] = x[0] - PIXEL_SIZE;
+                switch (lastDirection) {
+                    case 'U':
+                        oriBuffer = 'L';
+                        break;
+                    case 'D':
+                        oriBuffer = 'U';
+                        break;
+                    case 'L':
+                        oriBuffer = 'H';
+                        break;
+                }
+
                 break;
             case 'R':
                 x[0] = x[0] + PIXEL_SIZE;
+                switch (lastDirection) {
+                    case 'U':
+                        oriBuffer = 'D';
+                        break;
+                    case 'D':
+                        oriBuffer = 'R';
+                        break;
+                    case 'R':
+                        oriBuffer = 'H';
+                        break;
+                }
                 break;
             case 'U':
                 y[0] = y[0] - PIXEL_SIZE;
+                switch (lastDirection) {
+                    case 'L':
+                        oriBuffer = 'R';
+                        break;
+                    case 'R':
+                        oriBuffer = 'U';
+                        break;
+                    case 'U':
+                        oriBuffer = 'V';
+                        break;
+                }
                 break;
             case 'D':
                 y[0] = y[0] + PIXEL_SIZE;
+                switch (lastDirection) {
+                    case 'L':
+                        oriBuffer = 'D';
+                        break;
+                    case 'R':
+                        oriBuffer = 'L';
+                        break;
+                    case 'D':
+                        oriBuffer = 'V';
+                        break;
+                }
                 break;
         }
+        orientation.addFirst(oriBuffer);
     }
 
     public void checkApple() {
@@ -296,17 +402,20 @@ public class Game extends JPanel implements ActionListener {
             appleEaten++;
             addApple();
         }
+        else{
+            orientation.removeLast();
+        }
     }
 
     public void checkHit() {
-        for (int i = length; i > 0; i--) {
+        for (int i = length; i > 1; i--) {
             if (x[0] == x[i] && y[0] == y[i]) {
                 gameState = 2;
                 System.out.println("You hit yourself.");
                 break;
             }
         }
-        if (x[0] < 0 || x[0] > width || y[0] < 0 || y[0] > height) {
+        if (x[0] < 0 || x[0] >= width || y[0] < 0 || y[0] >= height) {
             gameState = 2;
             System.out.println("You hit a wall.");
         }
@@ -317,6 +426,7 @@ public class Game extends JPanel implements ActionListener {
         frames++;
         switch (gameState) {
             case 0:
+                direction = 'R';
                 alpha += 7;
                 if (countdown > 0) {
                     if (frames % 30 == 0)
@@ -331,10 +441,13 @@ public class Game extends JPanel implements ActionListener {
                 break;
             case 1:
                 mouse++;
-                if (mouse > 90)
+                if (mouse > 60)
                     showCursor(false);
-                else showCursor(true);
+                else
+                    showCursor(true);
                 if (frames % (speed / 10) == 0) {
+                    lastDirection = direction;
+                    direction = bufferDirection;
                     move();
                     checkApple();
                     checkHit();
@@ -343,8 +456,8 @@ public class Game extends JPanel implements ActionListener {
             case 2:
                 showCursor(true);
                 transitionFrame++;
-                if (transitionFrame < 25)
-                    transition = easeOutCubic(transitionFrame / 25, 100);
+                if (transitionFrame < 30)
+                    transition = easeOutCubic(transitionFrame / 30, 100, 5);
                 if (transitionFrame > 30 && transitionFrame < 60)
                     menuAlpha += 7;
                 if (menuAlpha > 255)
@@ -383,26 +496,28 @@ public class Game extends JPanel implements ActionListener {
 
         @Override
         public void keyPressed(KeyEvent e) {
+            if (gameState == 1)
+                mouse += 60;
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
                 case KeyEvent.VK_A:
                     if (direction != 'R')
-                        direction = 'L';
+                        bufferDirection = 'L';
                     break;
                 case KeyEvent.VK_RIGHT:
                 case KeyEvent.VK_D:
                     if (direction != 'L')
-                        direction = 'R';
+                        bufferDirection = 'R';
                     break;
                 case KeyEvent.VK_UP:
                 case KeyEvent.VK_W:
                     if (direction != 'D')
-                        direction = 'U';
+                        bufferDirection = 'U';
                     break;
                 case KeyEvent.VK_DOWN:
                 case KeyEvent.VK_S:
                     if (direction != 'U')
-                        direction = 'D';
+                        bufferDirection = 'D';
                     break;
             }
         }
@@ -429,6 +544,7 @@ public class Game extends JPanel implements ActionListener {
 
         @Override
         public void mouseMoved(MouseEvent e) {
+            mouse = 0;
             Point location = e.getPoint();
             Component component = e.getComponent();
             switch (gameState) {
@@ -461,8 +577,8 @@ public class Game extends JPanel implements ActionListener {
         }
     }
 
-    public int easeOutCubic(double x, int end) {
-        return (int) (end * Math.pow(1 - x, 4));
+    public int easeOutCubic(double x, int end, int b) {
+        return (int) (end * Math.pow(1 - x, b));
     }
 
     public void requestFocusForComponent(Component component) {
