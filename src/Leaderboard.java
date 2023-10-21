@@ -32,7 +32,7 @@ public class Leaderboard {
      * 2 = Transition out
      */
 
-    static final int buttonHeight 
+    private final int buttonHeight;
 
     Leaderboard(Panel panel) {
         this.panel = panel;

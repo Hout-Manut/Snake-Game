@@ -163,11 +163,12 @@ public class Game extends JPanel implements ActionListener {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Font customFont;
         FontMetrics metrics;
+        int size;
+        int cut = 3;
 
         try {
             switch (gameState) {
                 case 1:
-                int size;
                     g2d.setColor(new Color(245, 75, 60));
                     g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
@@ -176,7 +177,7 @@ public class Game extends JPanel implements ActionListener {
 
                     g2d.setColor(new Color(139, 173, 169));
                     for (int i = 1; i < length; i++) {
-                        size = (int)(5 * i/length);
+                        size = (int)(cut * i/length);
                         switch (orientation.get(i - 1)) {
                             case 'H':
                                 g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
@@ -223,7 +224,31 @@ public class Game extends JPanel implements ActionListener {
 
                     g2d.setColor(new Color(139, 173, 169, alpha));
                     for (int i = 1; i < length; i++) {
-                        g2d.fillRect(x[i], y[i], PIXEL_SIZE, PIXEL_SIZE);
+                        size = (int)(cut * i/length);
+                        switch (orientation.get(i - 1)) {
+                            case 'H':
+                                g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
+                                break;
+                            case 'V':
+                                g2d.fillRect(x[i] + size, y[i], PIXEL_SIZE - (size * 2), PIXEL_SIZE);
+                                break;
+                            case 'U':
+                                g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE - (size * 2), PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i], PIXEL_SIZE - (size * 2), PIXEL_SIZE - size);
+                                break;
+                            case 'R':
+                                g2d.fillRect(x[i] + size, y[i], PIXEL_SIZE - (size * 2), PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
+                                break;
+                            case 'D':
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE - size, PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE - (size * 2), PIXEL_SIZE - size);
+                                break;
+                            case 'L':
+                                g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE - size, PIXEL_SIZE - (size * 2));
+                                g2d.fillRect(x[i] + size, y[i] + size, PIXEL_SIZE - (size * 2), PIXEL_SIZE - size);
+                                break;
+                        }
                     }
                     g2d.setColor(Color.red);
                     customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 50.0f);
