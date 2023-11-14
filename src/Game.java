@@ -13,10 +13,10 @@ import java.util.Random;
 
 public class Game extends JPanel implements ActionListener {
 
-    int width;
-    int height;
+    private static final int width = 1280;
+    private static final int height = 720;
 
-    final int PIXEL_SIZE = 25;
+    final int PIXEL_SIZE = 20;
     int NUMBER_OF_PIXELS;
     int start_x;
     int start_y;
@@ -53,13 +53,15 @@ public class Game extends JPanel implements ActionListener {
     private LinkedList<Character> orientation;
     private char oriBuffer;
     /*
-     * V = vertical
-     * H = horizontal
-     * U = up and right
-     * R = right and down
-     * D = down and left
-     * L = left and up
-     */
+    * V = vertical
+    * H = horizontal
+    * U = up and right
+    * R = right and down
+    * D = down and left
+    * L = left and up
+    */
+    int size;
+    int cut = 3;
 
     private int selected;
     /*
@@ -73,29 +75,32 @@ public class Game extends JPanel implements ActionListener {
     private Timer timer;
     private MyKeyAdapter keyAdapter;
     private MyMouseAdapter mouseAdapter;
-
+    
     private Rectangle menuRec;
     private Rectangle restartRec;
-
+    
     final int buttonWidth = 200;
     final int buttonHeight = 50;
     final int buttonStringHeight;
-
+    
     private int menuButtonX;
     private int menuButtonY;
     private int restartButtonX;
     private int restartButtonY;
-
-    private String restartColor;
-    private String restartStringColor;
-    private String menuColor;
-    private String menuStringColor;
-
+    
+    private static final String buttonIdle = "#888080";
+    private static final String buttonHover = "#dbd9d9";
+    
+    private String restartColor = buttonIdle;
+    private String restartStringColor = "#ffffff";
+    
+    private String menuColor = buttonIdle;
+    private String menuStringColor = "#ffffff";
+    
     private Color rgb;
 
     Game(Panel panel) {
-        this.width = panel.frameW;
-        this.height = panel.frameH;
+        this.panel = panel;
         random = new Random();
         keyAdapter = new MyKeyAdapter();
         mouseAdapter = new MyMouseAdapter();
@@ -105,7 +110,6 @@ public class Game extends JPanel implements ActionListener {
         this.addKeyListener(keyAdapter);
         this.addMouseListener(mouseAdapter);
         this.addMouseMotionListener(mouseAdapter);
-        this.panel = panel;
         timer = new Timer(delay, this);
 
         restartButtonX = (int) ((width - buttonWidth) * 0.80);
@@ -114,18 +118,12 @@ public class Game extends JPanel implements ActionListener {
         menuButtonY = ((height - buttonHeight) / 2) + 60;
         buttonStringHeight = (height + 25) / 2;
 
-        menuColor = "#1f1e33";
-        menuStringColor = "#1f1e33";
-        restartColor = "#1f1e33";
-        restartStringColor = "#1f1e33";
-
         menuRec = new Rectangle(menuButtonX, menuButtonY, buttonWidth, buttonHeight);
         restartRec = new Rectangle(restartButtonX, restartButtonY, buttonWidth, buttonHeight);
     }
 
     public void start() {
         this.setCursor(Cursor.getDefaultCursor());
-        this.setPreferredSize(new Dimension(width, height));
         NUMBER_OF_PIXELS = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
         x = new int[NUMBER_OF_PIXELS];
         y = new int[NUMBER_OF_PIXELS];
@@ -163,8 +161,6 @@ public class Game extends JPanel implements ActionListener {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Font customFont;
         FontMetrics metrics;
-        int size;
-        int cut = 3;
 
         try {
             switch (gameState) {
@@ -494,10 +490,29 @@ public class Game extends JPanel implements ActionListener {
                     gameoverAlpha = 255;
                 if (alpha <= 120)
                     alpha = 120;
+
+                restartColor = buttonIdle;
+                menuColor = buttonIdle;
+                restartStringColor = "#ffffff";
+                menuStringColor = "#ffffff";
+                switch (selected) {
+                    case 0:
+                        break;
+                    case 1:
+                        restartColor = buttonHover;
+                        restartStringColor = "#222222";
+                        break;
+                    case 2:
+                        menuColor = buttonHover;
+                        menuStringColor = "#222222";
+                        break;
+                }
+                if (transitionFrame > 300) gameState = 3;
                 break;
             case 3:
                 if (frames % 30 == 0) {
                     timer.stop();
+                    
                     panel.switchToMenu();
                 }
         }
@@ -573,7 +588,7 @@ public class Game extends JPanel implements ActionListener {
             Point location = e.getPoint();
             Component component = e.getComponent();
             switch (gameState) {
-                case 3:
+                case 2:
                     if (menuRec.contains(location)) {
                         selected = 1;
                         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

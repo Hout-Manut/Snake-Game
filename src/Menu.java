@@ -10,8 +10,8 @@ import java.util.Random;
 
 public class Menu extends JPanel implements ActionListener {
 
-    private int width;
-    private int height;
+    private static final int width = 1280;
+    private static final int height = 720;
     private static int PIXEL_SIZE = 20;
     private static int numberOfPixel;
 
@@ -46,7 +46,6 @@ public class Menu extends JPanel implements ActionListener {
     private static final String buttonIdle = "#888080";
     private static final String buttonHover = "#dbd9d9";
     int buttonStringHeight;
-    
 
     private String startColor = buttonIdle;
     private String startStringColor = "#ffffff";
@@ -68,13 +67,11 @@ public class Menu extends JPanel implements ActionListener {
     int[] fakeY;
     char fakeDirection;
     float fakeSpeed;
-    // boolean windowChanged = false;
+    boolean windowChanged = true;
 
     Menu(Panel panel) {
         random = new Random();
         this.panel = panel;
-        this.width = panel.frameW;
-        this.height = panel.frameH;
         MyMouseAdapter mouseAdapter = new MyMouseAdapter();
         this.setPreferredSize(new Dimension(width, height));
         this.setBackground(Color.decode(backgroundColor));
@@ -83,7 +80,7 @@ public class Menu extends JPanel implements ActionListener {
         this.addMouseListener(mouseAdapter);
         this.addMouseMotionListener(mouseAdapter);
         // this.addComponentListener(new MyComponentAdapter());
-        numberOfPixel =  (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
+        numberOfPixel = (width * height) / (PIXEL_SIZE * PIXEL_SIZE);
 
         fakeX = new int[numberOfPixel];
         fakeY = new int[numberOfPixel];
@@ -101,7 +98,7 @@ public class Menu extends JPanel implements ActionListener {
         exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
         timer = new Timer(delay, this);
     }
-    
+
     public void start() {
         this.setCursor(Cursor.getDefaultCursor());
         state = 0;
@@ -128,13 +125,14 @@ public class Menu extends JPanel implements ActionListener {
     //     leaderButtonY = ((height - 50) / 2) + 75;
     //     exitButtonX = (width - 200) / 2;
     //     exitButtonY = ((height - 50) / 2) + 150;
+    //     buttonStringHeight = (height + 25) / 2;
 
     //     startRec = new Rectangle(startButtonX, startButtonY, buttonWidth, buttonHeight);
     //     leaderRec = new Rectangle(leaderButtonX, leaderButtonY, buttonWidth, buttonHeight);
     //     exitRec = new Rectangle(exitButtonX, exitButtonY, buttonWidth, buttonHeight);
     //     windowChanged = false;
     // }
-    
+
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -161,7 +159,6 @@ public class Menu extends JPanel implements ActionListener {
                 customFont = loadCustomFont("src/Assets/GeosansLight.ttf", 30.0f);
                 g2d.setFont(customFont);
                 metrics = getFontMetrics(g2d.getFont());
-
 
                 g2d.setColor(Color.decode(startColor));
                 g2d.fillRoundRect(startButtonX, startButtonY, buttonWidth, buttonHeight, 7, 7);
