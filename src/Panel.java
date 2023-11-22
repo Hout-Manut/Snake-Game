@@ -9,21 +9,31 @@ public class Panel extends JFrame {
 
     private Menu menu;
     private Game game;
+    private Dimension screen;
+    private int x, y;
 
     Panel() {
         menu = new Menu(this);
         game = new Game(this);
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        screen = tk.getScreenSize();
+        x = (screen.width - width) / 2;
+        y = (screen.height - height) / 2;
         this.add(menu);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Snake");
         this.setResizable(false);
         this.setLocationRelativeTo(null);
-        this.setLocation(300, 200);
+        this.setLocation(x, y);
         Image iconImage = Toolkit.getDefaultToolkit().getImage("src/Assets/python.png");
         this.setIconImage(iconImage);
         this.pack();
         this.setVisible(true);
         menu.start();
+    }
+
+    public void restart() {
+        game.start();
     }
 
     public void switchToMenu() {

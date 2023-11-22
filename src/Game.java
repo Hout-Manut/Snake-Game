@@ -53,13 +53,13 @@ public class Game extends JPanel implements ActionListener {
     private LinkedList<Character> orientation;
     private char oriBuffer;
     /*
-    * V = vertical
-    * H = horizontal
-    * U = up and right
-    * R = right and down
-    * D = down and left
-    * L = left and up
-    */
+     * V = vertical
+     * H = horizontal
+     * U = up and right
+     * R = right and down
+     * D = down and left
+     * L = left and up
+     */
     int size;
     int cut = 3;
 
@@ -75,28 +75,28 @@ public class Game extends JPanel implements ActionListener {
     private Timer timer;
     private MyKeyAdapter keyAdapter;
     private MyMouseAdapter mouseAdapter;
-    
+
     private Rectangle menuRec;
     private Rectangle restartRec;
-    
+
     final int buttonWidth = 200;
     final int buttonHeight = 50;
     final int buttonStringHeight;
-    
+
     private int menuButtonX;
     private int menuButtonY;
     private int restartButtonX;
     private int restartButtonY;
-    
+
     private static final String buttonIdle = "#888080";
     private static final String buttonHover = "#dbd9d9";
-    
+
     private String restartColor = buttonIdle;
     private String restartStringColor = "#ffffff";
-    
+
     private String menuColor = buttonIdle;
     private String menuStringColor = "#ffffff";
-    
+
     private Color rgb;
 
     Game(Panel panel) {
@@ -142,7 +142,7 @@ public class Game extends JPanel implements ActionListener {
         bufferDirection = 'R';
         oriBuffer = 'H';
         length = 5;
-        speed = 40.0f;
+        speed = 4.0f;
         menuAlpha = 0;
         restartAlpha = 0;
         for (int i = 0; i < length; i++) {
@@ -173,7 +173,7 @@ public class Game extends JPanel implements ActionListener {
 
                     g2d.setColor(new Color(139, 173, 169));
                     for (int i = 1; i < length; i++) {
-                        size = (int)(cut * i/length);
+                        size = (int) (cut * i / length);
                         switch (orientation.get(i - 1)) {
                             case 'H':
                                 g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
@@ -200,7 +200,6 @@ public class Game extends JPanel implements ActionListener {
                         }
                     }
 
-
                     if (x[0] < 200 && y[0] < 100 && hudAlpha > 60) {
                         hudAlpha -= 20;
                     } else if (!(x[0] < 200 && y[0] < 100) && hudAlpha < 255) {
@@ -215,12 +214,12 @@ public class Game extends JPanel implements ActionListener {
                     g2d.setColor(new Color(245, 75, 60, alpha));
                     g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-                    g2d.setColor(new Color(93, 158, 149, alpha));
+                    g2d.setColor(new Color(93, 158, 149));
                     g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
                     g2d.setColor(new Color(139, 173, 169, alpha));
                     for (int i = 1; i < length; i++) {
-                        size = (int)(cut * i/length);
+                        size = (int) (cut * i / length);
                         switch (orientation.get(i - 1)) {
                             case 'H':
                                 g2d.fillRect(x[i], y[i] + size, PIXEL_SIZE, PIXEL_SIZE - (size * 2));
@@ -291,11 +290,11 @@ public class Game extends JPanel implements ActionListener {
                     g2d.fillRoundRect(menuButtonX, menuButtonY, buttonWidth, buttonHeight,
                             7, 7);
 
-                    rgb = Color.decode(menuStringColor);
+                    rgb = Color.decode(restartStringColor);
                     g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
                     g2d.drawString("Restart", (int) ((width - metrics.stringWidth("Restart")) * 0.8),
                             buttonStringHeight - 60);
-                    rgb = Color.decode(restartStringColor);
+                    rgb = Color.decode(menuStringColor);
                     g2d.setColor(new Color(rgb.getRed(), rgb.getBlue(), rgb.getGreen(), alpha));
                     g2d.drawString("Menu", (int) ((width - metrics.stringWidth("Menu")) * 0.8),
                             buttonStringHeight + 60);
@@ -340,13 +339,13 @@ public class Game extends JPanel implements ActionListener {
             appleY = random.nextInt((int) (height / PIXEL_SIZE)) * PIXEL_SIZE;
             overlap = false;
             for (int i = length; i > 0; i--)
-                if (appleX == x[i] && appleY == y[i]){
+                if (appleX == x[i] && appleY == y[i]) {
                     overlap = true;
                     break;
                 }
         } while (overlap);
-//        System.out.println("Apple added at (" + appleX + ", " + appleY + ")");
-    
+        // System.out.println("Apple added at (" + appleX + ", " + appleY + ")");
+
     }
 
     public void move() {
@@ -422,8 +421,7 @@ public class Game extends JPanel implements ActionListener {
             length++;
             appleEaten++;
             addApple();
-        }
-        else{
+        } else {
             orientation.removeLast();
         }
     }
@@ -432,12 +430,16 @@ public class Game extends JPanel implements ActionListener {
         for (int i = length; i > 1; i--) {
             if (x[0] == x[i] && y[0] == y[i]) {
                 gameState = 2;
+                showCursor(true);
+                mouse = 0;
                 System.out.println("You hit yourself.");
                 break;
             }
         }
         if (x[0] < 0 || x[0] >= width || y[0] < 0 || y[0] >= height) {
             gameState = 2;
+            showCursor(true);
+            mouse = 0;
             System.out.println("You hit a wall.");
         }
     }
@@ -466,7 +468,7 @@ public class Game extends JPanel implements ActionListener {
                     showCursor(false);
                 else
                     showCursor(true);
-                if (frames % (speed / 10) == 0) {
+                if (frames % speed == 0) {
                     lastDirection = direction;
                     direction = bufferDirection;
                     move();
@@ -475,7 +477,6 @@ public class Game extends JPanel implements ActionListener {
                 }
                 break;
             case 2:
-                showCursor(true);
                 transitionFrame++;
                 if (transitionFrame < 30)
                     transition = easeOutCubic(transitionFrame / 30, 100, 5);
@@ -499,20 +500,19 @@ public class Game extends JPanel implements ActionListener {
                     case 0:
                         break;
                     case 1:
-                        restartColor = buttonHover;
-                        restartStringColor = "#222222";
-                        break;
-                    case 2:
                         menuColor = buttonHover;
                         menuStringColor = "#222222";
                         break;
+                    case 2:
+                        restartColor = buttonHover;
+                        restartStringColor = "#222222";
+                        break;
                 }
-                if (transitionFrame > 300) gameState = 3;
                 break;
             case 3:
                 if (frames % 30 == 0) {
                     timer.stop();
-                    
+
                     panel.switchToMenu();
                 }
         }
@@ -570,11 +570,13 @@ public class Game extends JPanel implements ActionListener {
             mouse = 0;
             Point location = e.getPoint();
             switch (gameState) {
-                case 3:
+                case 2:
                     if (menuRec.contains(location)) {
-                        gameState = 1;
+                        gameState = 3;
+                        break;
                     } else if (restartRec.contains(location)) {
-                        gameState = 0; // change later
+                        gameState = 0;
+                        panel.restart();
                     }
                     break;
                 default:
