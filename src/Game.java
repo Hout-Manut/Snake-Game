@@ -142,7 +142,7 @@ public class Game extends JPanel implements ActionListener {
         bufferDirection = 'R';
         oriBuffer = 'H';
         length = 5;
-        speed = 4.0f;
+        speed = 5.0f;
         menuAlpha = 0;
         restartAlpha = 0;
         for (int i = 0; i < length; i++) {
@@ -168,10 +168,10 @@ public class Game extends JPanel implements ActionListener {
                     g2d.setColor(new Color(245, 75, 60));
                     g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-                    g2d.setColor(new Color(93, 158, 149));
+                    g2d.setColor(new Color(100, 98, 80));
                     g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
-                    g2d.setColor(new Color(139, 173, 169));
+                    g2d.setColor(new Color(86, 86, 70));
                     for (int i = 1; i < length; i++) {
                         size = (int) (cut * i / length);
                         switch (orientation.get(i - 1)) {
@@ -214,10 +214,10 @@ public class Game extends JPanel implements ActionListener {
                     g2d.setColor(new Color(245, 75, 60, alpha));
                     g2d.fillOval(appleX, appleY, PIXEL_SIZE, PIXEL_SIZE);
 
-                    g2d.setColor(new Color(93, 158, 149));
+                    g2d.setColor(new Color(100, 98, 80, alpha));
                     g2d.fillRect(x[0], y[0], PIXEL_SIZE, PIXEL_SIZE);
 
-                    g2d.setColor(new Color(139, 173, 169, alpha));
+                    g2d.setColor(new Color(86, 86, 70, alpha));
                     for (int i = 1; i < length; i++) {
                         size = (int) (cut * i / length);
                         switch (orientation.get(i - 1)) {

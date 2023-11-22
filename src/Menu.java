@@ -67,7 +67,6 @@ public class Menu extends JPanel implements ActionListener {
     int[] fakeY;
     char fakeDirection;
     float fakeSpeed;
-    boolean windowChanged = true;
 
     Menu(Panel panel) {
         random = new Random();
